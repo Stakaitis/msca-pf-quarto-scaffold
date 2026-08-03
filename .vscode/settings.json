@@ -1,0 +1,27 @@
+{
+  // Prose, not code: wrap at the window edge rather than one long line per
+  // paragraph, and keep wrapped lines aligned under the paragraph start.
+  "[quarto]": {
+    "editor.wordWrap": "on",
+    "editor.wrappingIndent": "same",
+    "editor.lineNumbers": "on",
+    "editor.minimap.enabled": false,
+    "editor.quickSuggestions": { "comments": false, "strings": false, "other": false }
+  },
+
+  // The Quarto extension previews the ACTIVE file. The section files are
+  // {{< include >}} partials with no YAML header, so previewing one directly
+  // shows raw [@citekeys]. Use `pixi run preview` instead — it previews the
+  // whole Part B-1 and hot-reloads on section edits.
+  "quarto.render.previewType": "external",
+
+  // LTeX is the in-editor grammar checker that understands Markdown and LaTeX,
+  // so it does not flag [@keys] or \commands as misspellings. Grammarly's
+  // desktop app cannot attach to VS Code — do that pass in Word instead, via
+  // `pixi run proof`.
+  "ltex.language": "en-GB",
+  // Add your own field's vocabulary here so it stops underlining your nouns.
+  "ltex.dictionary": {
+    "en-GB": ["Quarto", "pixi", "TinyTeX"]
+  }
+}

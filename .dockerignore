@@ -1,0 +1,15 @@
+# Keep the build context tiny. Without this, the 712 MB local pixi env and the
+# build outputs get uploaded to the Docker daemon on every build.
+.pixi/
+_build/
+.quarto/
+.git/
+.vscode/
+review/
+backups/
+*.pdf
+*.docx
+*.html
+*.tex
+!tex/*.tex
+.DS_Store

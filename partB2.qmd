@@ -1,0 +1,73 @@
+---
+bibliography: references.bib
+csl: nature.csl
+---
+
+<!-- =====================================================================
+     PART B-2 — no overall page limit, but keep it disciplined.
+     The CV has an indicative length of 5 pages; Table 5.2 for the
+     beneficiary is capped at 1 page.
+     Build:  pixi run b2
+     ===================================================================== -->
+
+# 4. CV of the researcher
+
+<!-- Handbook: do NOT fill the publication list in Part A — evaluators are told
+     to disregard it there. It belongs here. -->
+
+## Education
+
+[Degree, institution, year. Most recent first.]
+
+## Research positions
+
+[Role, institution, dates.]
+
+## Publications
+
+[Up to five key publications, with full references. Say what your contribution
+was if the author position does not make it obvious.]
+
+## Fellowships, awards, funding
+
+[What you have won, and what it was worth.]
+
+## Supervision, teaching, project management
+
+[Concrete: how many students, what budgets, what responsibility.]
+
+# 5. Capacity of the participating organisations
+
+## 5.1 General description
+
+[The host, in context. Why it is the right place for this specific project.]
+
+## 5.2 Beneficiary — key facts
+
+<!-- Max 1 page for the beneficiary; max half a page per associated partner. -->
+
+| | |
+|---|---|
+| Legal name | [name] |
+| Department | [dept] |
+| Role of supervisor | [role] |
+| Key infrastructure | [what the project needs] |
+| Relevant projects | [recent, relevant] |
+
+# 6. Ethics
+
+[Address every ethics issue flagged in the Part A ethics self-assessment. If you
+ticked a box there, it must be explained here. Silence reads as an oversight.]
+
+# 7. Declaration on generative AI
+
+<!-- MANDATORY. Do not omit it. -->
+
+[State whether generative AI tools were used in preparing the proposal, and how.
+The applicant remains fully responsible for the content.]
+
+# 8. Green Charter
+
+<!-- Max half a page. -->
+
+[Environmental measures the project and the fellow will adopt.]

@@ -1,0 +1,53 @@
+# =====================================================================
+#  Shared build + formatting config for the whole proposal.
+#  Enforces every MSCA Part B rule so you can just write prose.
+#  You should rarely need to edit this. Content lives in sections/.
+# =====================================================================
+project:
+  output-dir: _build
+  render:
+    - partB1.qmd
+    - partB2.qmd
+
+format:
+  pdf:
+    # --- engine + font (Times-compatible, embedded) ---
+    # pdfLaTeX + tgtermes is the most portable path and needs no system font
+    # install. The font itself (TeX Gyre Termes) is loaded in tex/msca-header.tex,
+    # which also maps common Unicode symbols so you can type them directly.
+    pdf-engine: pdflatex
+    documentclass: article
+    classoption: ["11pt", "a4paper"]
+    papersize: a4
+    fontsize: 11pt
+    # --- margins: 16 mm frame (MSCA minimum is 15 mm; the extra 1 mm is a
+    #     safety buffer so optical punctuation never measures under 15 mm).
+    #     Lower to 15mm for maximum space, or raise for more white space. ---
+    geometry:
+      - top=16mm
+      - bottom=16mm
+      - left=16mm
+      - right=16mm
+      - footskip=9mm
+    # --- all the font/footer/heading rules ---
+    include-in-header: tex/msca-header.tex
+    # --- single line spacing (MSCA minimum) ---
+    linestretch: 1.0
+    # --- MSCA: no cover page, no table of contents, no auto numbering ---
+    toc: false
+    number-sections: false
+    # --- keep links legible in print; only URLs coloured ---
+    colorlinks: true
+    linkcolor: black
+    citecolor: black
+    urlcolor: blue
+    # --- keep-tex is OFF: it drops partB1.tex/.log into the source dir and
+    #     races with `quarto preview`, which fails reading a .log that the
+    #     render has already cleaned up. Turn it on only to debug LaTeX. ---
+    keep-tex: false
+
+# --- references: one shared .bib, formatted by Quarto's built-in citeproc ---
+bibliography: references.bib
+link-citations: true
+# Compact numeric (Nature superscript) style — saves space vs author-year.
+csl: nature.csl

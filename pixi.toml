@@ -1,0 +1,53 @@
+# =====================================================================
+#  Reproducible build environment (Pixi).
+#  First time:   pixi run setup      (installs a local TeX engine)
+#  Every build:  pixi run pdf        (renders Part B-1 + checks page limit)
+#  Live preview: pixi run preview
+# =====================================================================
+[project]
+name = "msca-pf-proposal"
+version = "0.1.0"
+description = "MSCA Postdoctoral Fellowship proposal — Quarto scaffold with MSCA formatting baked in."
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-64", "osx-arm64", "win-64"]
+
+[dependencies]
+quarto = ">=1.5"
+python = ">=3.11"
+poppler = "*"        # provides pdfinfo / pdffonts for the page-count guard & checks
+
+[tasks]
+# One-time: install a self-contained TeX (TinyTeX). Quarto then auto-installs
+# any missing LaTeX packages (tgtermes, fancyhdr, lastpage, titlesec, ...)
+# on the first render.
+setup = "quarto install tinytex --no-prompt --update-path"
+
+# Build Part B-1 and immediately verify it fits in 10 pages.
+pdf = { cmd = "quarto render partB1.qmd && python scripts/check_pagecount.py _build/partB1.pdf 10" }
+
+# Build Part B-2 (no page limit).
+b2 = "quarto render partB2.qmd"
+
+# Render both parts to editable Microsoft Word (.docx) for supervisor feedback.
+docx = "quarto render partB1.qmd --to docx && quarto render partB2.qmd --to docx"
+
+# Build everything.
+all = { cmd = "quarto render && python scripts/check_pagecount.py _build/partB1.pdf 10" }
+
+# Live hot-reloading preview while you write (HTML — fast, reacts to edits in
+# sections/). Shows prose and flow, NOT pagination: use `pixi run pdf` for that.
+preview = "sh scripts/preview.sh"
+
+# Word file for a Grammarly / supervisor pass (Grammarly's Word add-in works;
+# Grammarly Desktop does not hook into VS Code).
+proof = { cmd = "quarto render partB1.qmd --to docx && open _build/partB1.docx" }
+
+# Rebuild the writing-method reference as a single self-contained HTML page
+# (left TOC, searchable). Edit WRITING_METHOD.md, then run this.
+method = { cmd = "quarto render WRITING_METHOD.md --to html && open WRITING_METHOD.html" }
+
+# Re-run only the page-limit check on the last build.
+check = "python scripts/check_pagecount.py _build/partB1.pdf 10"
+
+# Remove build artefacts.
+clean = "rm -rf _build .quarto"

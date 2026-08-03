@@ -1,0 +1,21 @@
+# Build outputs and caches — all regenerable
+_build/
+.quarto/
+.pixi/
+*_files/
+
+# LaTeX intermediates (keep-tex is off, but belt and braces)
+*.tex
+!tex/*.tex
+*.log
+*.aux
+
+# Machine-local editor state
+**/.claude/settings.local.json
+.DS_Store
+~$*
+.Rhistory
+*.tmp
+
+/.quarto/
+**/*.quarto_ipynb

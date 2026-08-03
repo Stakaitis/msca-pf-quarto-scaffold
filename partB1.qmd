@@ -1,0 +1,18 @@
+<!-- =====================================================================
+     PART B-1  (core proposal — HARD LIMIT 10 pages: Sections 1 + 2 + 3)
+     Tables, figures and references all count toward the 10 pages.
+     MSCA rule: no cover page, no table of contents.
+     You only edit the files under sections/. This master stitches them.
+     Build:  make pdf     (or)   pixi run pdf
+     ===================================================================== -->
+
+{{< include sections/_excellence.qmd >}}
+
+{{< include sections/_impact.qmd >}}
+
+{{< include sections/_implementation.qmd >}}
+
+# References {.unnumbered}
+
+::: {#refs}
+:::

@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    // Syntax, snippets, and the render/preview commands for .qmd
+    "quarto.quarto",
+    // Offline grammar/style checker that understands Markdown + LaTeX, so it
+    // ignores [@citekeys] and \commands. Closest in-editor stand-in for
+    // Grammarly, which cannot attach to VS Code.
+    "ltex-plus.vscode-ltex-plus"
+  ]
+}

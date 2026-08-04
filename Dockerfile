@@ -3,9 +3,9 @@
 # MSCA-PF proposal toolchain — Quarto + TinyTeX + poppler + PyMuPDF, pinned.
 #
 # Base : debian:bookworm-slim                          (~30 MB)
-# Deps : pixi -> quarto, python, poppler, pymupdf via pixi.lock  (~1.4 GB)
+# Deps : pixi -> quarto, python, poppler, pymupdf via pixi.lock  (~2.5 GB)
 # TeX  : TinyTeX + the packages tex/msca-header.tex needs (~700 MB)
-# Total: ~2.35 GB on disk (measured). Big, but it is a frozen LaTeX
+# Total: ~3.5 GB on disk (measured). Big, but it is a frozen LaTeX
 #        distribution — that is the whole point: no CTAN fetch at render
 #        time, byte-identical PDFs on any laptop, any year.
 #

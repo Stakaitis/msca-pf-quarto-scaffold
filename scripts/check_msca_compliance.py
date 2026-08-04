@@ -67,12 +67,17 @@ MIN_MARGIN_MM = 15.0
 MIN_BODY_PT = 11.0
 MIN_NON_BODY_PT = 8.0
 
-# LaTeX's `11pt` class option sets \normalsize to 10.95pt, not 11.00pt, and
-# PyMuPDF derives the size from the text matrix, so a correctly configured
-# document reports 10.8-11.0pt. Testing `< 11.0` literally would fail every
-# compliant render. 0.25pt is wide enough to absorb both effects and far too
-# narrow to let a real 10pt or 10.5pt body through.
-SIZE_TOLERANCE_PT = 0.25
+# This used to be 0.25pt, to absorb two defects that are now fixed at source in
+# tex/msca-header.tex: LaTeX's `11pt` class option resolving to 10.95pt, and
+# microtype font expansion smearing each line by +/-1.5%. Both are gone -- the
+# body is declared in `bp` (1/72in, the PDF's own unit) and expansion is off, so
+# the PDF now reports a clean 11.0.
+#
+# Keep this tight. It exists only to absorb float noise in the size PyMuPDF
+# derives from the text matrix, NOT to forgive a document that is genuinely
+# under-size. Widening it back to 0.25 would silently re-admit a 10.8pt render,
+# which is exactly what an evaluator measuring in Acrobat would fail us on.
+SIZE_TOLERANCE_PT = 0.02
 
 FOOTER_RE = re.compile(r"Part B - Page (\d+) of (\d+)")
 
@@ -106,6 +111,7 @@ PLACEHOLDER_PATTERNS = (
     r"TODO cite",
     r"\[CHECK\]",
     r"\[NOT FOUND",
+    r"\[ACRONYM",
     r"\*\*",
 )
 
@@ -315,10 +321,16 @@ def check_fonts(doc: "fitz.Document") -> CheckResult:
 
     problems = []
     if banned:
-        problems.append(
-            f"Latin Modern / Computer Modern: {', '.join(banned)} "
-            "(the template was bypassed -- see project.render in _quarto.yml)"
+        # Two very different causes produce a banned font, and the fix differs,
+        # so name the likely one rather than always blaming the template.
+        mono_only = all(re.search(r"Mono|Typewriter|CMTT", n, re.I) for n in banned)
+        hint = (
+            "a markdown code span (`like this`) renders in Latin Modern Mono -- "
+            "remove the backticks; there is no Times monospace"
+            if mono_only
+            else "the template was bypassed -- see project.render in _quarto.yml"
         )
+        problems.append(f"Latin Modern / Computer Modern: {', '.join(banned)} ({hint})")
     if foreign:
         problems.append(f"not a Times family: {', '.join(foreign)}")
     if unembedded:

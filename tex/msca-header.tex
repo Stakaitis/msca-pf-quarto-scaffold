@@ -23,6 +23,42 @@
 % Never load helvet, or any package that sets \familydefault{\sfdefault}.
 \renewcommand{\familydefault}{\rmdefault}
 
+% ---- Body text measures EXACTLY 11.00 pt in the finished PDF ----
+% Two separate traps had to be cleared here; both were measured, not guessed.
+%
+% 1. The `11pt` class option does not give 11 pt. size11.clo sets \normalsize
+%    via \@xipt, which latex.ltx defines as 10.95.
+% 2. Worse, TeX's point is 1/72.27 inch while a PDF measures in PostScript
+%    points of 1/72 inch. The ratio is 72/72.27 = 0.996264, so even an explicit
+%    \fontsize{11} writes "10.9589 Tf" into the PDF. Word's 11 pt writes 11.000,
+%    because Word already works in 1/72 inch. An evaluator measuring this PDF in
+%    Acrobat reads PostScript points — so LaTeX's 11 pt looks like 10.96 to them,
+%    under an MSCA rule that states 11 pt as a MINIMUM.
+%
+% Specifying the size in `bp` (big points = 1/72 inch, TeX's name for the
+% PostScript point) makes the PDF report exactly 11.00. Verified by reading the
+% raw `Tf` operator out of the content stream, not by trusting a library.
+% Do not "simplify" 11bp back to 11 — that silently reintroduces the 10.96.
+\makeatletter
+\renewcommand\normalsize{%
+  \@setfontsize\normalsize{11bp}{13.6bp}%
+  \abovedisplayskip 11\p@ \@plus3\p@ \@minus6\p@
+  \abovedisplayshortskip \z@ \@plus3\p@
+  \belowdisplayshortskip 6.5\p@ \@plus3.5\p@ \@minus3\p@
+  \belowdisplayskip \abovedisplayskip
+  \let\@listi\@listI}
+\makeatother
+\normalsize
+
+% \textheight must be a whole number of lines, or the last line on a page can
+% sit a fraction below the text block and eat into the bottom margin. Measured:
+% without this, a reference line on p8 landed 14.73mm from the edge against a
+% 15mm rule -- a 0.27mm overshoot, invisible to the eye and fatal to the check.
+% `heightrounded` makes geometry round \textheight to an exact multiple of
+% \baselineskip. It must come after geometry is loaded, which it is: Quarto
+% emits \usepackage{...}{geometry} near the top and this header well below it.
+\geometry{heightrounded}
+
 % ---- Let common Unicode symbols "just work" under pdfLaTeX ----
 % So you can type >=, <=, x, +-, ->, degree, micro, Greek letters etc. straight
 % into the text without build errors. (If you need lots of exotic Unicode,
@@ -66,12 +102,12 @@
 \pagestyle{fancy}
 \fancyhf{}
 \renewcommand{\headrulewidth}{0pt}
-\fancyfoot[C]{\fontsize{9}{11}\selectfont Part B - Page \thepage{} of \pageref{LastPage}}
+\fancyfoot[C]{\fontsize{9bp}{11bp}\selectfont Part B - Page \thepage{} of \pageref{LastPage}}
 % Make sure the first page (which LaTeX styles as "plain") also shows the footer
 \fancypagestyle{plain}{%
   \fancyhf{}%
   \renewcommand{\headrulewidth}{0pt}%
-  \fancyfoot[C]{\fontsize{9}{11}\selectfont Part B - Page \thepage{} of \pageref{LastPage}}%
+  \fancyfoot[C]{\fontsize{9bp}{11bp}\selectfont Part B - Page \thepage{} of \pageref{LastPage}}%
 }
 % To print "of 10" (the page limit) instead of the actual total, replace
 % \pageref{LastPage} above with the number 10.
@@ -96,8 +132,25 @@
 \usepackage{caption}
 \captionsetup{font=small, labelfont=bf, skip=4pt}
 
+% ---- Long URLs must not run into the margin ----
+% A Google Scholar link in Part B-2 pushed text to 9mm from the right edge
+% against a 15mm rule: TeX will not break a URL at an arbitrary character, so an
+% unbreakable string just overhangs. xurl allows a break anywhere in a URL.
+% Load it late: it must come after hyperref, which Quarto emits for us.
+\usepackage{xurl}
+
 % ---- Sensible microtype spacing to fit more text without shrinking font ----
+% expansion=false is REQUIRED for the 11 pt guarantee. Font expansion rescales
+% glyphs per line by up to a couple of percent to improve justification, and the
+% PDF records the scaled size — measured on the 2026-08-04 render it spread the
+% body across 10.799-11.018 pt. Protrusion is kept: it only nudges punctuation
+% into the margin and does not touch glyph size. (It does shave the measured
+% margin slightly, which is why geometry sets 16 mm against a 15 mm rule.)
+% Quarto's own template may already have loaded microtype, so passing options in
+% a \usepackage here raises "Option clash". \AtBeginDocument runs after every
+% package is loaded, whichever order they arrive in.
 \usepackage{microtype}
+\AtBeginDocument{\microtypesetup{expansion=false}}
 
 % ---- Compact reference list, WITHOUT dropping below 11 pt ----
 % The bibliography counts toward the 10-page limit, so every line matters.

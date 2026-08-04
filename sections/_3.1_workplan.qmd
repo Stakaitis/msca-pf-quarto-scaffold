@@ -1,0 +1,67 @@
+# 3. Quality and efficiency of the implementation
+
+## 3.1 Quality and effectiveness of the work plan, assessment of risks and appropriateness of the effort assigned to work packages
+
+<!-- The heading names the three things scored here: the plan, the RISKS, and
+     whether the EFFORT is appropriate. All three tables below are checked for.
+     Tables count toward the 10-page limit, so keep them lean. -->
+
+### Work packages
+
+<!-- The effort column is not optional: this sub-section is scored partly on
+     "appropriateness of the effort assigned". Person-months should total the
+     fellowship duration. -->
+
+| WP | Title | Months | Effort (PM) | Objective | Deliverables |
+|----|-------|--------|-------------|-----------|--------------|
+| WP1 | [title] | M1–M[x] | [n] | O1 | D1.1 |
+| WP2 | [title] | M[x]–M[y] | [n] | O2 | D2.1 |
+| WP3 | [title] | M[y]–M24 | [n] | O3 | D3.1 |
+| WP4 | Management, training, dissemination | M1–M24 | [n] | — | D4.1–D4.3 |
+
+<!-- total effort should equal the fellowship duration in person-months -->
+
+### Timeline
+
+| Task | Y1 Q1 | Y1 Q2 | Y1 Q3 | Y1 Q4 | Y2 Q1 | Y2 Q2 | Y2 Q3 | Y2 Q4 |
+|------|-------|-------|-------|-------|-------|-------|-------|-------|
+| WP1 | • | • | • | | | | | |
+| WP2 | | | • | • | • | | | |
+| WP3 | | | | | • | • | • | |
+| WP4 | • | • | • | • | • | • | • | • |
+
+<!-- A markdown table is the cheapest Gantt that survives the page budget. For a
+     graphical one, `pixi run gantt` renders gantt.yaml to figures/gantt.pdf at
+     text-column width and checks it fits; a figure typically costs ~0.85 of a
+     page, which is a lot when the cap is 10. -->
+
+### Deliverables
+
+<!-- THE FIRST THREE ARE MANDATORY for every MSCA-PF and are the ones most often
+     forgotten. Keep them, with their months. -->
+
+| ID | Deliverable | Month |
+|----|-------------|-------|
+| D4.1 | Data Management Plan | M6 |
+| D4.2 | Career Development Plan | M6 |
+| D4.3 | Plan for dissemination and exploitation, including communication | M[x] |
+| D1.1 | [scientific deliverable] | M[x] |
+
+### Milestones
+
+| MS | Milestone | Month | Verifiable outcome |
+|----|-----------|-------|--------------------|
+| MS1 | [what] | M[x] | [how it is verified] |
+| MS2 | [what] | M[x] | [how it is verified] |
+
+### Risk assessment
+
+<!-- MANDATORY, and evaluators look for it by name. A table of trivial risks
+     reads as naivety. Separate the mitigation (what makes it unlikely) from the
+     contingency (what you do if it happens anyway). -->
+
+| Risk | Likelihood | Impact | Mitigation | Contingency |
+|------|-----------|--------|------------|-------------|
+| [technical risk] | Medium | High | [what makes it unlikely] | [what you do instead] |
+| [access or sample risk] | Low | High | [what makes it unlikely] | [what you do instead] |
+| [timeline risk] | Medium | Medium | [what makes it unlikely] | [what you do instead] |

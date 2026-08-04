@@ -186,6 +186,8 @@ def iter_spans(doc: "fitz.Document") -> Iterator[Span]:
         One :class:`Span` per styled run, in page then reading order.
     """
     for page_index, page in enumerate(doc):
+        # Rectangles of every placed image, so text drawn over one can be
+        # recognised as figure content rather than body prose.
         for block in page.get_text("dict")["blocks"]:
             lines = block.get("lines", [])
             block_text = "".join(
@@ -248,6 +250,18 @@ def is_exempt_from_body_size(span: Span) -> tuple[bool, str]:
         return True, "caption"
     if REF_MARKER_RE.match(span.text.strip()) and span.text.strip():
         return True, "reference marker"
+    if not (TIMES_RE.search(span.font) or MATH_COMPANION_RE.search(span.font)):
+        # Not set in the body face, so by the rules' own definition it is not
+        # body text: "the reference font for the BODY TEXT ... is Times New
+        # Roman". Figure labels and chart axes arrive in the chart tool's font
+        # and are allowed down to the 8 pt floor, which is still enforced below.
+        #
+        # This cannot be used to smuggle in an under-size body: if a non-Times
+        # face covers a meaningful share of the document, check_fonts fails it
+        # outright. Geometry was tried first and rejected -- a vector figure is
+        # a Form XObject whose reported bbox is in its own coordinate space, not
+        # the page's, so intersection tests silently measured the wrong region.
+        return True, "non-body face (figure/caption)"
     return False, ""
 
 
@@ -344,7 +358,29 @@ def check_page_size(doc: "fitz.Document") -> CheckResult:
     )
 
 
-def check_fonts(doc: "fitz.Document") -> CheckResult:
+# A non-Times face covering at least this share of the document's characters is
+# body text in the wrong font, not a figure label.
+FOREIGN_FONT_BODY_SHARE = 0.15
+
+
+def _font_char_share(spans: Sequence[Span], names: Sequence[str]) -> float:
+    """Fraction of all characters set in any of the named fonts.
+
+    Args:
+        spans: Every text run in the document.
+        names: Font names to measure.
+
+    Returns:
+        Share between 0.0 and 1.0; 0.0 when the document has no text.
+    """
+    wanted = set(names)
+    total = sum(len(s.text) for s in spans)
+    if not total:
+        return 0.0
+    return sum(len(s.text) for s in spans if s.font in wanted) / total
+
+
+def check_fonts(doc: "fitz.Document", spans: Sequence[Span] = ()) -> CheckResult:
     """Check that every font is embedded and from a Times family.
 
     Args:
@@ -372,7 +408,8 @@ def check_fonts(doc: "fitz.Document") -> CheckResult:
         else:
             foreign.append(name)
 
-    problems = []
+    problems: list[str] = []
+    notes: list[str] = []
     if banned:
         # Two very different causes produce a banned font, and the fix differs,
         # so name the likely one rather than always blaming the template.
@@ -385,11 +422,33 @@ def check_fonts(doc: "fitz.Document") -> CheckResult:
         )
         problems.append(f"Latin Modern / Computer Modern: {', '.join(banned)} ({hint})")
     if foreign:
-        problems.append(f"not a Times family: {', '.join(foreign)}")
+        # The rule is scoped: "The reference font for the BODY TEXT ... is Times
+        # New Roman", and "text elements other than the body text ... may
+        # deviate". A Gantt chart or figure carrying Helvetica is therefore
+        # legal. What is never legal is the body itself in another face.
+        #
+        # Distinguish by share of characters: a figure's labels are a small
+        # fraction of the document, a mis-set body is most of it. Latin Modern
+        # stays a hard FAIL above regardless of share -- it is the signature of
+        # a bypassed template, not a design choice.
+        share = _font_char_share(spans, foreign)
+        if share >= FOREIGN_FONT_BODY_SHARE:
+            problems.append(
+                f"not a Times family, and {share:.0%} of all characters: "
+                f"{', '.join(foreign)} -- this is body text in the wrong face"
+            )
+        else:
+            notes.append(
+                f"non-Times face(s) on {share:.1%} of characters "
+                f"({', '.join(foreign)}) -- allowed for figures and captions, "
+                f"which the rules exempt; check it is not body text"
+            )
     if unembedded:
         problems.append(f"not embedded: {', '.join(unembedded)}")
     if problems:
         return CheckResult("Times fonts, embedded", FAIL, "; ".join(problems))
+    if notes:
+        return CheckResult("Times fonts, embedded", WARN, "; ".join(notes), hard=False)
     return CheckResult(
         "Times fonts, embedded",
         PASS,
@@ -958,7 +1017,7 @@ def run_checks(pdf_path: Path, max_pages: int | None) -> list[CheckResult]:
         return [
             check_freshness(pdf_path),
             check_page_size(doc),
-            check_fonts(doc),
+            check_fonts(doc, spans),
             check_font_sizes(spans, doc.page_count),
             check_margins(doc),
             check_footer(doc),

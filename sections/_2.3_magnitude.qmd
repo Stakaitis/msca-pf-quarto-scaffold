@@ -1,0 +1,20 @@
+## 2.3 The magnitude and importance of the project's contribution to the expected scientific, societal and economic impacts
+
+<!-- Three impact types are named in the heading and are looked for separately.
+     Overclaiming is penalised more reliably than ambition is rewarded: state
+     the chain of steps between this project and any application, and be honest
+     about where in that chain the fellowship sits. -->
+
+### Scientific impact
+
+<!-- What changes in your field if this works. Who builds on it, and how soon. -->
+
+[...]
+
+### Societal and economic impact
+
+<!-- Be concrete about the population or sector, and about the distance to
+     application. "Contributes one step toward" scores better than a claim the
+     evidence cannot carry. -->
+
+[...]

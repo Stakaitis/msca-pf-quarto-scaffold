@@ -3,14 +3,27 @@
      Tables, figures and references all count toward the 10 pages.
      MSCA rule: no cover page, no table of contents.
      You only edit the files under sections/. This master stitches them.
-     Build:  make pdf     (or)   pixi run pdf
+     Build:  pixi run build   (renders every part, then validates all of them)
      ===================================================================== -->
 
-{{< include sections/_excellence.qmd >}}
+<!-- The acronym appears here and in Part A, and they must match. The
+     compliance checker fails the build while the placeholder is unreplaced.
+     No backticks anywhere in this file: a markdown code span renders in Latin
+     Modern Mono, which is not a Times family and fails the font check. -->
 
-{{< include sections/_impact.qmd >}}
+**Proposal acronym: [acronym]**
 
-{{< include sections/_implementation.qmd >}}
+{{< include sections/_1.1_objectives.qmd >}}
+{{< include sections/_1.2_methodology.qmd >}}
+{{< include sections/_1.3_supervision.qmd >}}
+{{< include sections/_1.4_researcher.qmd >}}
+
+{{< include sections/_2.1_career.qmd >}}
+{{< include sections/_2.2_dissemination.qmd >}}
+{{< include sections/_2.3_magnitude.qmd >}}
+
+{{< include sections/_3.1_workplan.qmd >}}
+{{< include sections/_3.2_host.qmd >}}
 
 # References {.unnumbered}
 

@@ -19,12 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-THIRD-PARTY COMPONENT
-
-`nature.csl` is redistributed from the Citation Style Language styles
-repository (https://github.com/citation-style-language/styles) under the
-Creative Commons Attribution-ShareAlike 3.0 License. The licence is declared
-inside the file's own <rights> element.

@@ -1,0 +1,18 @@
+## 3.2 Quality and capacity of the host institutions and participating organisations, including hosting arrangements
+
+<!-- Infrastructure, expertise and hosting arrangements. Name the facilities the
+     project actually needs and confirm access — a list of impressive equipment
+     the work plan never uses reads as padding. -->
+
+### Infrastructure and expertise
+
+<!-- The specific platforms, instruments and people this project depends on. -->
+
+[...]
+
+### Hosting arrangements
+
+<!-- Integration into the group, workspace, administrative and career support,
+     and any institutional training the fellow will access. -->
+
+[...]

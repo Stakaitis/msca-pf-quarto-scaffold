@@ -1,42 +1,46 @@
 # MSCA-PF proposal scaffold — write the content, forget the formatting
 
 A [Quarto](https://quarto.org) scaffold for a **Marie Skłodowska-Curie Postdoctoral
-Fellowship** Part B. Every formatting rule the call imposes is baked into the build,
-so you only ever edit prose. Each build also checks that Part B-1 still fits inside
-the 10-page limit — and **fails** if it does not.
+Fellowship** Part B. Every formatting rule the call imposes is enforced by the build,
+which **measures the finished PDF** and fails if it does not comply.
 
-Nothing here is specific to one proposal: the section files ship as empty skeletons
-with the evaluator's questions written in as comments.
+Nothing here is specific to one proposal. The section files ship as skeletons carrying
+the official sub-section headings and the evaluator's questions as comments.
 
 ## Why bother
 
 MSCA makes everything past page 10 **invisible to evaluators**. An overflow does not
-error — it silently deletes your Implementation tables. That one fact is the reason
-this scaffold exists: the page count is checked on every single build.
+error — it silently deletes your Implementation tables. And formatting is easy to break
+without noticing: this scaffold exists because a render once came out US Letter, in
+Latin Modern, with no page footer, and nothing about it looked wrong at a glance.
+
+So the build does not trust the render. It opens the PDF and measures it.
 
 ## Quick start
 
 ```bash
 # 1. one-time: install pixi (https://pixi.sh), then
-pixi install          # Quarto, Python, poppler — exact versions from pixi.lock
+pixi install          # Quarto, Python, PyMuPDF, poppler — exact versions from pixi.lock
 pixi run setup        # TinyTeX, a self-contained LaTeX distribution
 
-# 2. the command you will run most
-pixi run pdf          # renders _build/partB1.pdf, then enforces the page limit
+# 2. THE command: renders every part, then validates every PDF and Word file
+pixi run build
 
 # 3. while writing — live, hot-reloading preview on localhost:4200
 pixi run preview
 ```
 
-No pixi? If Quarto, a TeX engine and poppler are already on your `PATH`, the
-`Makefile` covers the core tasks: `make pdf`, `make preview`, `make b2`,
-`make check`, `make clean`. (`docx`, `proof` and `method` are pixi-only.)
+`pixi run build` is the only sanctioned build. A bare `quarto render` produces a
+document nobody has checked.
+
+No pixi? If Quarto, a TeX engine, poppler and PyMuPDF are already on your `PATH`,
+`make build`, `make preview`, `make pdf`, `make b2`, `make check` and `make clean` do
+the same. The Makefile calls the tools directly rather than through pixi.
 
 **Full walkthrough: open [`HOW_TO_EDIT_AND_RENDER.html`](HOW_TO_EDIT_AND_RENDER.html)
-in a browser.** It covers setting up a clean laptop from zero, the daily writing loop,
-citations, the Grammarly workflow, and troubleshooting.
+in a browser.**
 
-## The gate fails until you have written it
+## The build fails until you have written it
 
 Straight after cloning, `pixi run build` **fails**, and that is correct:
 
@@ -44,99 +48,121 @@ Straight after cloning, `pixi run build` **fails**, and that is correct:
 [FAIL] No unresolved placeholders   17 found -- '[Verb] [what, in WP1]' ...
 ```
 
-Every `[...]` in the skeletons is a prompt to be replaced. The build refuses to
-call a document compliant while any of them survives into the PDF, because an
-evaluator would read them as your text. Replace them and the check goes green.
-Everything *else* — A4, Times, 11 pt, margins, footer — passes from the start.
+Every `[...]` in the skeletons is a prompt to be replaced. The build refuses to call a
+document compliant while any of them survives into the PDF, because an evaluator would
+read them as your text. Everything *else* — A4, Times, 11 pt, margins, footer — passes
+from the start.
 
 ## Where you write
 
-| File | What it is |
+`sections/` holds **one file per scored sub-section**. That is the only directory you
+normally open.
+
+| File | Criterion |
 |------|-----------|
-| `sections/_excellence.qmd` | Section 1 — Excellence (1.1 objectives, 1.2 methodology, 1.3 supervision, **1.4 your experience**) |
-| `sections/_impact.qmd` | Section 2 — Impact (2.1 career, 2.2 dissemination, 2.3 magnitude) |
-| `sections/_implementation.qmd` | Section 3 — Implementation (work plan, Gantt, milestones, risk table) |
-| `partB2.qmd` | Part B-2 — CV, host capacity, ethics, AI declaration, Green Charter |
+| `_1.1_objectives.qmd` `_1.2_methodology.qmd` `_1.3_supervision.qmd` `_1.4_researcher.qmd` | Excellence — 50% |
+| `_2.1_career.qmd` `_2.2_dissemination.qmd` `_2.3_magnitude.qmd` | Impact — 30% |
+| `_3.1_workplan.qmd` `_3.2_host.qmd` | Implementation — 20% |
+| `partB2.qmd` | CV, host capacity, ethics, security screening, Green Charter, AI declaration |
 | `references.bib` | Bibliography — cite in text with `[@key]` |
-| `partB1.qmd` | Master file that stitches the three sections together; you rarely touch it |
 
-Everything else is machinery: `_quarto.yml`, `tex/msca-header.tex`, `nature.csl`,
-`scripts/`. Editing those can break compliance in ways the build will not warn you about.
+One file = one evaluator question, so the thing you edit is the thing that gets scored.
+`partB1.qmd` stitches them together in order and is build configuration, not content.
 
-> **§1.4 is easy to lose.** "Quality and appropriateness of the researcher's professional
-> experience, competences and skills" is a required Part B-1 subsection under the
-> 50%-weighted Excellence criterion — it is the evaluator's question 14. It is *not* the
-> Part B-2 CV. The skeleton includes it so you do not omit it by accident.
+**The build refuses to render if any of the nine is missing or empty.** Each is a
+question that would otherwise go silently unanswered — which is exactly how §1.4 gets
+lost, at a cost of two scored questions.
 
-## What is enforced automatically
+Everything else is machinery: `_quarto.yml`, `tex/`, `nature.csl`, `scripts/`.
 
-- **A4**, **16 mm** margins on all sides (safely above the 15 mm minimum)
-- **TeX Gyre Termes** — the free font metric-compatible with Times New Roman, accepted
-  as Nimbus Roman No. 9 L — **embedded** in the PDF, as the call requires
-- **11 pt** body minimum, **single** spacing; **tables stay at 11 pt**
-- Footer `Part B - Page X of Y`; captions and footnotes ≥ 8 pt
-- **No cover page, no table of contents**
-- **Part B-1 hard-capped at 10 pages** — see `scripts/check_pagecount.py`
-- Compact **superscript numeric citations**, which save far more space than they cost
+## What the build measures
+
+Seven hard checks, on every rendered PDF **and** every Word file. Any failure exits
+non-zero:
+
+| Check | Rule |
+|-------|------|
+| Page size | A4, every page |
+| Fonts | Times family for body text, all embedded; Latin Modern rejected outright |
+| Font size | body ≥ 11 pt; captions, footers and figure labels ≥ 8 pt |
+| Margins | ≥ 15 mm all four sides, measured from the content, images and vector ink included |
+| Footer | `Part B - Page X of Y` on every page, with a correct total |
+| Page limit | Part B-1 ≤ 10 pages |
+| Placeholders | no `[...]`, `TODO cite` or stray `**` left in the text |
+
+Plus three warnings: cover page / table of contents, reference-list page span, and PDF
+version. And a freshness check — a PDF older than its sources fails, so a build that
+did not happen can never be reported as one that did.
+
+## Word output
+
+`pixi run build` renders `.docx` alongside the PDF, styled to match: A4, 16 mm margins,
+Times New Roman 11 pt, same footer. `tex/msca-reference.docx` supplies those defaults;
+regenerate it with `pixi run refdoc`.
+
+**Word will not paginate identically to LaTeX.** The two break lines differently, so the
+same text at the same size lands on different pages. The Word file matches on *style*;
+the PDF remains the authority for the 10-page limit.
 
 ## All tasks
 
 | Command | What it does |
 |---------|--------------|
-| `pixi run pdf` | Part B-1 + page check. Your main command. |
+| `pixi run build` | **The entry point.** Renders every part, validates every output. |
 | `pixi run preview` | Live hot-reloading HTML on `localhost:4200` |
-| `pixi run b2` | Part B-2 (no page limit) |
-| `pixi run docx` | Both parts as Word files |
-| `pixi run proof` | Word file for a Grammarly or supervisor pass, and opens it |
-| `pixi run all` | Both parts + page check |
-| `pixi run check` | Re-run the page check without rendering |
+| `pixi run pdf` | Part B-1 alone + its checks — a faster loop while writing |
+| `pixi run b2` | Part B-2 alone + its checks |
+| `pixi run check` | Re-run the checks on the last build, without rendering |
+| `pixi run gantt` | Render `gantt.yaml` to `figures/gantt.pdf` at text-column width |
+| `pixi run refdoc` | Regenerate the Word reference document |
+| `pixi run hooks` | Install a pre-commit hook that blocks committing a failing PDF |
+| `pixi run docx` / `proof` | Word output (`proof` opens it; macOS only) |
 | `pixi run clean` | Delete build artefacts |
 
-## Live preview — two Quarto gotchas this works around
-
-Both verified against Quarto 1.9.38 on 2026-08-03:
+## Live preview — two Quarto behaviours this works around
 
 1. **`quarto preview` watches only the file you name.** Files pulled in with
-   `{{< include >}}` are *not* watched, so editing a `sections/*.qmd` file leaves the
-   preview silently stale — old text, no error. `scripts/preview.sh` nudges the master
-   file when a section changes.
-2. **`quarto preview` to PDF renders once, then fails on every rebuild.** The live loop
-   therefore runs on HTML, which reloads cleanly.
+   `{{< include >}}` are *not* watched, so editing a section leaves the preview silently
+   stale. `scripts/preview.sh` nudges the master file when a section changes.
+2. **`quarto preview` pointed at PDF renders once, then fails on every rebuild.** The
+   live loop therefore runs on HTML, which reloads cleanly.
 
-HTML shows prose and flow; it cannot show pagination. Use `pixi run pdf` for that.
+HTML shows prose and flow; it cannot show pagination. Use `pixi run build` for that.
+
+`scripts/render_all.sh` also renders each document individually rather than using
+project mode, which fails intermittently with a `rename … NotFound` error partway
+through — leaving a stale PDF behind that still measures as valid.
 
 ## Reproducible builds
 
-`pixi.toml` + `pixi.lock` pin Quarto, Python and poppler from conda-forge. The one
-remaining variable is TinyTeX fetching LaTeX packages from CTAN at first render —
-networked and mutable. The `Dockerfile` freezes that too:
+`pixi.toml` + `pixi.lock` pin every tool. The one remaining variable is TinyTeX
+fetching LaTeX packages from CTAN at first render. The `Dockerfile` freezes that too:
 
 ```bash
 docker build --platform linux/amd64 -t msca:latest .
 docker run --rm --platform linux/amd64 --network none -v "$PWD:/work" msca:latest
 ```
 
-That renders with **no network at all**. Verified 2026-08-03: identical PDF, correct
-page count, all fonts embedded.
+That renders and validates with **no network at all**.
 
-The image is amd64-only, and that is not a preference — conda-forge publishes no
-`quarto` build for `linux-aarch64`, so the environment cannot solve on ARM. On Apple
-Silicon it runs under emulation.
+amd64 only, and not by preference: conda-forge publishes no `quarto` build for
+`linux-aarch64`, so the environment cannot solve on ARM. On Apple Silicon it emulates.
 
-## Adapting it to a different funder
+## Adapting it to a different call
 
-Three files carry the call-specific rules:
+| What | Where |
+|------|-------|
+| Page cap | `PART_B1_PAGE_LIMIT` in `scripts/check_msca_compliance.py` — one constant; callers pass `--part-b1` |
+| Required sub-sections | the `required` list in `scripts/render_all.sh` |
+| Margins, font size, citation style | `_quarto.yml` |
+| Font, footer text, Unicode mappings | `tex/msca-header.tex` |
+| Word styling | `scripts/make_reference_docx.py`, then `pixi run refdoc` |
 
-| File | What to change |
-|------|----------------|
-| `pixi.toml` / `Makefile` | The page cap, passed as the last argument to `check_pagecount.py` |
-| `tex/msca-header.tex` | Font, and the `Part B - Page X of Y` footer text |
-| `_quarto.yml` | Margins (`geometry:`), font size, citation style (`csl:`) |
+Swap `nature.csl` for any style from [zotero.org/styles](https://www.zotero.org/styles).
 
-Swap `nature.csl` for any of the thousands at [zotero.org/styles](https://www.zotero.org/styles).
+Re-check the formatting rules against the current call's application form before
+reusing this — they are reissued each year.
 
 ## Licence
 
-MIT — see [LICENSE](LICENSE). `nature.csl` is redistributed from the
-[CSL styles repository](https://github.com/citation-style-language/styles) under
-CC BY-SA 3.0.
+MIT — see [LICENSE](LICENSE). Third-party components are listed in [NOTICE](NOTICE).

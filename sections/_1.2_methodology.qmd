@@ -1,0 +1,27 @@
+## 1.2 Soundness of the proposed methodology (including interdisciplinary approaches, consideration of the gender dimension and other diversity aspects if relevant for the research project, and the quality of open science practices)
+
+<!-- How the objectives are actually met. The gender dimension and open-science blocks below are MANDATORY and separately scored — an unjustified sentence scores as badly as an omission. -->
+
+### Overall design
+
+[...]
+
+### Work packages
+
+[...]
+
+### Methodological challenges and mitigation
+
+[...]
+
+### Interdisciplinary approach
+
+[...]
+
+### Sex and gender dimension
+
+[...]
+
+### Open science practices
+
+[...]

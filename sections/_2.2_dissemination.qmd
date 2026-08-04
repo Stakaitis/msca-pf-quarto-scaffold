@@ -1,0 +1,27 @@
+## 2.2 Suitability and quality of the measures to maximise expected outcomes and impacts, as set out in the dissemination and exploitation plan, including communication activities
+
+<!-- Three different things, scored separately. Merging them is the commonest
+     way to lose marks here: an evaluator looking for "communication" will not
+     accept a list of journals. Keep the three headings. -->
+
+### Dissemination
+
+<!-- To your PEERS. Target journals, conferences, repositories, preprint policy.
+     Open access is not optional under Horizon Europe. -->
+
+[...]
+
+### Exploitation
+
+<!-- Who USES the result, and how. Downstream users, IP strategy if relevant,
+     standards or policy uptake, further funding it positions you for. -->
+
+[...]
+
+### Communication
+
+<!-- To NON-SPECIALISTS: the public, patients, schools, policymakers. Concrete
+     activities with an audience and a channel. "A project website" on its own
+     is the weakest possible answer. -->
+
+[...]

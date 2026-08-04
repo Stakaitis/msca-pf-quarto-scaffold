@@ -46,6 +46,31 @@ if [ -z "$docs" ]; then
     exit 2
 fi
 
+# Every scored sub-section is its own file, so a missing or emptied one is a
+# missing evaluator answer. Checking here means you find out at build time
+# rather than when a reviewer scores the gap.
+#
+# The list is the nine sub-sections the handbook and the evaluator manual
+# score. Add a file here when the call adds a sub-section, and only then.
+required="_1.1_objectives _1.2_methodology _1.3_supervision _1.4_researcher
+          _2.1_career _2.2_dissemination _2.3_magnitude
+          _3.1_workplan _3.2_host"
+missing=""
+for req in $required; do
+    f="sections/${req}.qmd"
+    if [ ! -f "$f" ]; then
+        missing="$missing\n  $f is MISSING"
+    elif [ "$(grep -cvE '^\s*(<!--.*-->)?\s*$' "$f" 2>/dev/null)" -lt 3 ]; then
+        missing="$missing\n  $f is effectively empty"
+    fi
+done
+if [ -n "$missing" ]; then
+    printf 'render_all.sh: scored sub-section(s) missing or empty:%b\n' "$missing" >&2
+    echo "  Each is a question an evaluator scores. Restore it, or if the call" >&2
+    echo "  genuinely dropped it, remove it from 'required' in this script." >&2
+    exit 1
+fi
+
 status=0
 for doc in $docs; do
     [ -f "$doc" ] || { echo "render_all.sh: $doc is listed but missing" >&2; status=1; continue; }

@@ -54,20 +54,33 @@ was if the author position does not make it obvious.]
 | Key infrastructure | [what the project needs] |
 | Relevant projects | [recent, relevant] |
 
-# 6. Ethics
+# 6. Additional ethics information
 
-[Address every ethics issue flagged in the Part A ethics self-assessment. If you
-ticked a box there, it must be explained here. Silence reads as an oversight.]
+<!-- The heading must appear even if you ticked nothing in the Part A ethics
+     self-assessment: an absent section reads as an oversight, not as "no
+     issues". If you did tick a box, every ticked item is explained here. -->
 
-# 7. Declaration on generative AI
+[Address every ethics issue flagged in the Part A self-assessment, or state that
+none were flagged.]
 
-<!-- MANDATORY. Do not omit it. -->
+# 7. Additional information on security screening
 
-[State whether generative AI tools were used in preparing the proposal, and how.
-The applicant remains fully responsible for the content.]
+<!-- Section 7 is SECURITY SCREENING, not the AI declaration. Getting this
+     number wrong puts the AI declaration under a heading an evaluator is
+     reading for something else. Keep the heading even when it does not apply. -->
 
-# 8. Green Charter
+[No security-sensitive activities are foreseen. — or describe them.]
+
+# 8. Environmental considerations in light of the MSCA Green Charter
 
 <!-- Max half a page. -->
 
 [Environmental measures the project and the fellow will adopt.]
+
+# Declaration on the use of generative AI
+
+<!-- MANDATORY, and UNNUMBERED — it sits at the very end of Part B-2, after the
+     numbered sections. -->
+
+[State whether generative AI tools were used in preparing the proposal, and how.
+The applicant remains fully responsible for the content.]

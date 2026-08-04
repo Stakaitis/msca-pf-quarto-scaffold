@@ -1,0 +1,14 @@
+# Task list for an optional Section 3 Gantt chart.  Regenerate: pixi run gantt
+#
+# The work plan ships as a markdown table in _3.1_workplan.qmd, which is cheaper
+# on the page budget. Use this only if you want a drawn chart; budget ~0.85 of a
+# page for it. Keep the rows in step with the work-package table.
+title: "Work plan"
+tasks:
+  - {name: "WP1 [title]", start: 2027-01-01, end: 2027-12-31, category: "WP1", phase: "O1"}
+  - {name: "WP2 [title]", start: 2027-08-01, end: 2028-06-30, category: "WP2", phase: "O2"}
+  - {name: "WP3 [title]", start: 2028-02-01, end: 2028-12-31, category: "WP3", phase: "O3"}
+  - {name: "WP4 Management, training, dissemination", start: 2027-01-01, end: 2028-12-31, category: "WP4", phase: "Cross-cutting"}
+  - {name: "MS1 [milestone]", start: 2027-12-31, end: 2027-12-31, category: "Milestone", milestone: true, phase: "O1"}
+  - {name: "MS2 [milestone]", start: 2028-06-30, end: 2028-06-30, category: "Milestone", milestone: true, phase: "O2"}
+  - {name: "MS3 [milestone]", start: 2028-12-31, end: 2028-12-31, category: "Milestone", milestone: true, phase: "O3"}

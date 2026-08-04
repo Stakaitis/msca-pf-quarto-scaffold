@@ -20,6 +20,12 @@ quarto = ">=1.5"
 python = ">=3.11"
 poppler = "*"        # pdfinfo / pdffonts, for eyeballing a PDF by hand
 pymupdf = ">=1.24"   # page geometry, fonts and character sizes for the compliance gate
+# Gantt chart generation (scripts/gantt/, vendored from lab-tools). Only used
+# by `pixi run gantt`; the proposal renders fine without ever running it.
+pandas = ">=2.0,<3"        # pandas 3 breaks plotly Timestamp serialisation
+plotly = ">=5.20,<6.8"     # 6.9 orjson path cannot serialise pandas Timestamp
+pyyaml = ">=6.0"
+python-kaleido = "0.2.*"    # v1 serialises via orjson, which chokes on pandas Timestamp
 
 [tasks]
 # One-time: install a self-contained TeX (TinyTeX). Quarto then auto-installs
@@ -52,13 +58,14 @@ preview = "sh scripts/preview.sh"
 # Grammarly Desktop does not hook into VS Code).
 proof = { cmd = "quarto render partB1.qmd --to docx && open _build/partB1.docx" }
 
+# Regenerate the Section 3 Gantt chart from gantt.yaml, at text-column width so
+# Quarto never scales it (scaling a vector figure shrinks its labels too).
+gantt = "python scripts/make_gantt.py"
+
 # Regenerate the Word reference document (A4/Times/11pt/footer) from pandoc's
 # default template. Only needed if the styling values change.
 refdoc = "python scripts/make_reference_docx.py"
 
-# Rebuild the writing-method reference as a single self-contained HTML page
-# (left TOC, searchable). Edit WRITING_METHOD.md, then run this.
-method = { cmd = "quarto render WRITING_METHOD.md --to html && open WRITING_METHOD.html" }
 
 # Re-run the compliance check on the last build, without re-rendering.
 check = "sh scripts/check_all.sh"

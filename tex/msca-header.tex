@@ -197,8 +197,32 @@
 \usepackage{enumitem}
 \setlist{nosep, topsep=2pt, partopsep=0pt, leftmargin=1.4em}
 
-% ---- Tables: keep body size (never below 11 pt) and give rows a little air ----
-\renewcommand{\arraystretch}{1.15}
+% ---- Tables: keep body size (never below 11 pt), spend no space on padding ----
+% Measured 2026-08-04 on a 10/10-page Part B-1: 466 pt (35 lines, ~0.6 page) was
+% being lost to vertical glue stretched around tables. The cause is NOT that
+% longtable refuses to split -- it splits fine; the risk table breaks 3 rows on
+% one page and 7 on the next. The cause is that longtable will not break between
+% its repeated header (\endhead) and the first data row, so when header+row does
+% not fit in what is left of a page the whole table moves down, and \flushbottom
+% then stretches the glue on the abandoned page to justify its bottom margin.
+%
+% Three levers, none of which touches font size:
+%   1. Row padding. 1.15 gave every row 15% extra leading; 1.05 still reads
+%      comfortably and is the single biggest saving, because Part B-1 carries
+%      ~35 table rows.
+%   2. \LTpre/\LTpost default to \bigskipamount (12 pt) above and below EVERY
+%      longtable. Four longtables = 96 pt spent on white space alone.
+%   3. \tabcolsep is horizontal, but it pays vertically: narrower gutters mean
+%      more characters per line, so fewer wrapped lines in the p{} columns that
+%      make these tables tall in the first place.
+\renewcommand{\arraystretch}{1.05}
+\setlength{\tabcolsep}{4pt}
+% \ifcsname, not \@ifundefined: this file lands in the document preamble, where
+% @ is not a letter. abstract.qmd has no tables, so longtable may never load and
+% \LTpre may not exist -- this must degrade to a no-op, not an error.
+\AtBeginDocument{%
+  \ifcsname LTpre\endcsname\setlength{\LTpre}{4pt}\setlength{\LTpost}{4pt}\fi
+}
 
 % ---- Captions a touch smaller (allowed: >= 8 pt), still clearly legible ----
 \usepackage{caption}

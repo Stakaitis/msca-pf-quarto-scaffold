@@ -1,0 +1,21 @@
+# 1. Excellence
+
+## 1.1 Quality and pertinence of the project's research and innovation objectives (and the extent to which they are ambitious, and go beyond the state of the art)
+
+<!-- Open with the problem, not the method. Establish stakes, then the state of the art, then make the gap feel inevitable. End with the aim and numbered objectives, each with a verifiable outcome. -->
+
+### Scientific background
+
+[...]
+
+### Clinical and societal relevance
+
+[...]
+
+### State of the art and the open question
+
+[...]
+
+### Overall aim and research objectives
+
+[...]

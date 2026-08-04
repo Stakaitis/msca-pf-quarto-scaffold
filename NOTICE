@@ -1,0 +1,12 @@
+THIRD-PARTY COMPONENTS
+======================
+
+nature.csl
+  Redistributed from the Citation Style Language styles repository
+  (https://github.com/citation-style-language/styles) under the Creative
+  Commons Attribution-ShareAlike 3.0 License. The licence is declared inside
+  the file's own <rights> element.
+
+scripts/gantt/
+  gantt.py and lib_plot_themes.py are vendored from the lab-tools repository.
+  See scripts/gantt/PROVENANCE.md for the re-sync procedure.

@@ -6,7 +6,6 @@ _build/
 .git/
 .vscode/
 review/
-backups/
 *.pdf
 *.docx
 *.html

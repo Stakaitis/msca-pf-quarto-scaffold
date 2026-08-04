@@ -29,7 +29,8 @@ pixi run preview
 ```
 
 No pixi? If Quarto, a TeX engine and poppler are already on your `PATH`, the
-`Makefile` mirrors every task: `make pdf`, `make preview`, `make b2`, `make clean`.
+`Makefile` covers the core tasks: `make pdf`, `make preview`, `make b2`,
+`make check`, `make clean`. (`docx`, `proof` and `method` are pixi-only.)
 
 **Full walkthrough: open [`HOW_TO_EDIT_AND_RENDER.html`](HOW_TO_EDIT_AND_RENDER.html)
 in a browser.** It covers setting up a clean laptop from zero, the daily writing loop,

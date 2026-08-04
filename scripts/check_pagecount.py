@@ -23,10 +23,10 @@ from pathlib import Path
 
 
 def count_pdf_pages(pdf_path: Path) -> int:
-    """Return the number of pages in a PDF.
+    """Return the number of pages in a PDF, using the ``pdfinfo`` CLI.
 
-    Prefers the ``pdfinfo`` CLI (poppler); falls back to ``pypdf`` if the
-    CLI is not on the PATH.
+    ``pdfinfo`` ships with poppler, which ``pixi.toml`` pins and the Docker
+    image installs, so it is always present in a correctly built environment.
 
     Args:
         pdf_path: Path to the PDF file.
@@ -36,30 +36,27 @@ def count_pdf_pages(pdf_path: Path) -> int:
 
     Raises:
         FileNotFoundError: If ``pdf_path`` does not exist.
-        RuntimeError: If no page-counting backend is available.
+        RuntimeError: If ``pdfinfo`` is missing or its output cannot be parsed.
     """
     if not pdf_path.is_file():
         raise FileNotFoundError(f"PDF not found: {pdf_path}")
 
-    if shutil.which("pdfinfo"):
-        out = subprocess.run(
-            ["pdfinfo", str(pdf_path)],
-            capture_output=True,
-            text=True,
-            check=True,
-        ).stdout
-        for line in out.splitlines():
-            if line.startswith("Pages:"):
-                return int(line.split(":", 1)[1].strip())
-        raise RuntimeError("Could not parse page count from pdfinfo output.")
-
-    try:
-        from pypdf import PdfReader  # type: ignore
-    except ImportError as exc:  # pragma: no cover
+    if not shutil.which("pdfinfo"):
         raise RuntimeError(
-            "Need either the 'pdfinfo' CLI (poppler) or the 'pypdf' package."
-        ) from exc
-    return len(PdfReader(str(pdf_path)).pages)
+            "'pdfinfo' not found on PATH. It comes from poppler — run `pixi install`, "
+            "or use the Docker image."
+        )
+
+    out = subprocess.run(
+        ["pdfinfo", str(pdf_path)],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
+    for line in out.splitlines():
+        if line.startswith("Pages:"):
+            return int(line.split(":", 1)[1].strip())
+    raise RuntimeError("Could not parse page count from pdfinfo output.")
 
 
 def main(argv: list[str]) -> int:
@@ -89,9 +86,8 @@ def main(argv: list[str]) -> int:
         )
         return 1
 
-    status = "✅"
     note = "at the limit" if margin == 0 else f"{margin} page(s) to spare"
-    print(f"{status} Part B-1: {pages}/{limit} pages ({note}).")
+    print(f"✅ Part B-1: {pages}/{limit} pages ({note}).")
     return 0
 
 

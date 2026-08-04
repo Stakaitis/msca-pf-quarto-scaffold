@@ -30,7 +30,7 @@ setup = "quarto install tinytex --no-prompt --update-path"
 # THE ENTRY POINT. Renders every part, then validates every rendered PDF
 # against the full MSCA formatting rule set. Non-zero exit on any hard failure,
 # so a non-compliant PDF cannot be produced without the build saying so.
-build = { cmd = "quarto render && sh scripts/check_all.sh" }
+build = { cmd = "sh scripts/render_all.sh && sh scripts/check_all.sh" }
 
 # Build Part B-1 alone and validate it (faster loop while writing Section 1-3).
 pdf = { cmd = "quarto render partB1.qmd && python scripts/check_msca_compliance.py _build/partB1.pdf --part-b1" }
@@ -52,6 +52,10 @@ preview = "sh scripts/preview.sh"
 # Grammarly Desktop does not hook into VS Code).
 proof = { cmd = "quarto render partB1.qmd --to docx && open _build/partB1.docx" }
 
+# Regenerate the Word reference document (A4/Times/11pt/footer) from pandoc's
+# default template. Only needed if the styling values change.
+refdoc = "python scripts/make_reference_docx.py"
+
 # Rebuild the writing-method reference as a single self-contained HTML page
 # (left TOC, searchable). Edit WRITING_METHOD.md, then run this.
 method = { cmd = "quarto render WRITING_METHOD.md --to html && open WRITING_METHOD.html" }
@@ -63,4 +67,4 @@ check = "sh scripts/check_all.sh"
 hooks = "sh scripts/install_hooks.sh"
 
 # Remove build artefacts.
-clean = "rm -rf _build .quarto"
+clean = "rm -rf _build .quarto *_files *.tex *.pdf"

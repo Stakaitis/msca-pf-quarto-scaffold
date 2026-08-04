@@ -55,6 +55,19 @@ format:
     #     render has already cleaned up. Turn it on only to debug LaTeX. ---
     keep-tex: false
 
+  # --- Word output, styled to match the PDF -------------------------------
+  # Without a reference-doc, pandoc's default .docx has no page size, no
+  # margins, Calibri/Consolas at 12pt and no footer. This template carries
+  # A4 / 16mm / Times New Roman 11pt / "Part B - Page X of Y", so the Word file
+  # a supervisor opens looks like the PDF that gets submitted.
+  # Regenerate with: pixi run refdoc
+  # CAVEAT: Word and TeX break lines differently, so the page COUNT will not
+  # match the PDF. The PDF is the authority for the 10-page limit.
+  docx:
+    reference-doc: tex/msca-reference.docx
+    number-sections: false
+    toc: false
+
 # --- references: one shared .bib, formatted by Quarto's built-in citeproc ---
 bibliography: references.bib
 link-citations: true

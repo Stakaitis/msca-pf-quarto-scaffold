@@ -36,6 +36,19 @@ No pixi? If Quarto, a TeX engine and poppler are already on your `PATH`, the
 in a browser.** It covers setting up a clean laptop from zero, the daily writing loop,
 citations, the Grammarly workflow, and troubleshooting.
 
+## The gate fails until you have written it
+
+Straight after cloning, `pixi run build` **fails**, and that is correct:
+
+```
+[FAIL] No unresolved placeholders   17 found -- '[Verb] [what, in WP1]' ...
+```
+
+Every `[...]` in the skeletons is a prompt to be replaced. The build refuses to
+call a document compliant while any of them survives into the PDF, because an
+evaluator would read them as your text. Replace them and the check goes green.
+Everything *else* — A4, Times, 11 pt, margins, footer — passes from the start.
+
 ## Where you write
 
 | File | What it is |

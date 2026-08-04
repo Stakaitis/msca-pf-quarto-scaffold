@@ -38,6 +38,15 @@ for extra in _build/*.pdf; do
     $CHECK "$extra" --no-page-limit || status=1
 done
 
+# Word output is held to the same rules. It is not the submitted artefact, but
+# the supervisor reads it, and a .docx in Calibri 12pt on Letter undermines
+# every conversation about layout. No page cap: Word paginates differently from
+# TeX, so its page count is indicative only -- the PDF is the authority.
+for docx in _build/*.docx; do
+    [ -e "$docx" ] || continue
+    $CHECK "$docx" --no-page-limit || status=1
+done
+
 if [ "$status" -ne 0 ]; then
     echo "BUILD FAILED: at least one PDF is not MSCA-compliant (see above)."
     echo "Nothing here may be submitted until every hard check passes."

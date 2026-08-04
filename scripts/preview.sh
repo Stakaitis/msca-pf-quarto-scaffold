@@ -26,14 +26,19 @@ TARGET=${1:-partB1.qmd}
 # ponytail: polling loop rather than an fswatch/entr dependency — a 2 s lag is
 # unnoticeable next to a ~4 s render. Swap in `fswatch -o sections/` if you ever
 # want it instant.
+# Compare against a stamp file this script owns, NOT against $TARGET. Comparing
+# to $TARGET meant one section file with a future mtime (a bad clock, a restored
+# backup, a copy off a FAT drive) kept the condition true forever, rewriting the
+# master every 2 s and re-rendering continuously until you noticed the fan.
+STAMP=$(mktemp -t msca-preview) || exit 1
 while :; do
-    if [ -n "$(find sections -name '*.qmd' -newer "$TARGET" 2>/dev/null)" ]; then
-        touch "$TARGET"
+    if [ -n "$(find sections -name '*.qmd' -newer "$STAMP" 2>/dev/null)" ]; then
+        touch "$STAMP" "$TARGET"
     fi
     sleep 2
 done &
 POLLER=$!
-trap 'kill $POLLER 2>/dev/null' EXIT INT TERM
+trap 'kill $POLLER 2>/dev/null; rm -f "$STAMP"' EXIT INT TERM
 
 # Fixed port so the URL never changes: http://localhost:4200
 # That means you can park it in VS Code's Simple Browser once and just leave it.

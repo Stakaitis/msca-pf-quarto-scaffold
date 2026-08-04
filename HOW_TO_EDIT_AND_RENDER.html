@@ -180,10 +180,10 @@ On 3 August 2026 this image rendered the real Part B-1 with <code>--network none
 <h2 id="new"><span class="n">4</span>Starting a new proposal from this scaffold</h2>
 <p>The machinery is funder-agnostic apart from three files. To reuse it:</p>
 <div class="step"><div class="num">1</div><div class="body">Copy the folder, dropping the generated and project-specific parts:
-<pre>cp -R msca-quarto-scaffold ~/Documents/NEW-PROPOSAL
+<pre>cp -R MSCA/work ~/Documents/NEW-PROPOSAL
 cd ~/Documents/NEW-PROPOSAL
-rm -rf .pixi _build .quarto .git
-# then replace the skeleton text in sections/*.qmd and partB2.qmd with your own</pre></div></div>
+rm -rf .pixi _build .quarto .git WRITING_METHOD.* review why_inputs partB1_excimp_files
+rm -f  sections/*.qmd references.bib CLAUDE.md partB2.qmd partB1_excimp.qmd</pre></div></div>
 <div class="step"><div class="num">2</div><div class="body">Adjust the three things that encode <em>this</em> funder's rules:
 <table>
   <tr><th>File</th><th>Change</th></tr>
@@ -241,7 +241,7 @@ Two Quarto behaviours, both verified on 3&nbsp;August 2026 with Quarto 1.9.38:
   <tr><td><code>*italic text*</code></td><td><em>italic text</em> — species names, emphasis</td></tr>
   <tr><td><code>## Heading</code></td><td>A sub-section heading (<code>##</code> = level 2, <code>###</code> = level 3)</td></tr>
   <tr><td><code>- item</code></td><td>A bullet point (dash, then a space)</td></tr>
-  <tr><td><code>[@example2024]</code></td><td>A citation — renders as a superscript number and joins the reference list</td></tr>
+  <tr><td><code>[@niemiec2017]</code></td><td>A citation — renders as a superscript number and joins the reference list</td></tr>
   <tr><td><code>[@a2020; @b2021]</code></td><td>Two citations at once</td></tr>
   <tr><td><code>&lt;!-- a note --&gt;</code></td><td>A hidden comment. Does <strong>not</strong> appear in the PDF.</td></tr>
   <tr><td><code>&#124; A &#124; B &#124;</code></td><td>A table row. Keep the <code>&#124;---&#124;---&#124;</code> divider under the header row.</td></tr>
@@ -257,7 +257,7 @@ Any line it prints has an odd number of markers and needs fixing.</div>
 <div class="step"><div class="num">1</div><div class="body">Paste a BibTeX entry at the end of <code>references.bib</code>:
 <pre>@article{smith2024,
   author  = {Smith, Jane and Doe, John},
-  title   = {An example paper title — replace with your own},
+  title   = {A very important paper about neutrophils},
   journal = {Nature},
   year    = {2024},
   volume  = {600},

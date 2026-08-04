@@ -10,11 +10,22 @@
 # failed anywhere.
 set -u
 
+# Run from the project root whichever directory the caller was in, so a
+# relative `scripts/...` path and `_build/*.pdf` always resolve. Without this a
+# run from elsewhere reported "cannot read _build/partB1.pdf", which reads as a
+# compliance failure rather than a wrong working directory.
+cd "$(dirname "$0")/.." || exit 2
+
+[ -f scripts/check_msca_compliance.py ] || {
+    echo "check_all.sh: scripts/check_msca_compliance.py not found" >&2
+    exit 2
+}
+
 CHECK="${PYTHON:-python} scripts/check_msca_compliance.py"
 status=0
 
 # Part B-1 is the only document with a page limit: 10 pages, hard.
-$CHECK _build/partB1.pdf --max-pages 10 || status=1
+$CHECK _build/partB1.pdf --part-b1 || status=1
 $CHECK _build/partB2.pdf --no-page-limit || status=1
 # Supervisor-review extract. Not submitted, but it is rendered from the same
 # sections, and it is the file that regressed on 2026-07-28 — so it is checked.

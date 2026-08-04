@@ -25,7 +25,7 @@ because the .qmd was missing from `project.render` in _quarto.yml and so never
 saw the tuned template. Nothing about that PDF looked wrong at a glance.
 
 Usage:
-    python scripts/check_msca_compliance.py _build/partB1.pdf --max-pages 10
+    python scripts/check_msca_compliance.py _build/partB1.pdf --part-b1
     python scripts/check_msca_compliance.py _build/partB2.pdf --no-page-limit
 
 Exit code:
@@ -67,6 +67,12 @@ MIN_MARGIN_MM = 15.0
 MIN_BODY_PT = 11.0
 MIN_NON_BODY_PT = 8.0
 
+# "Sections 1, 2 and 3 together should not be longer than 10 pages."
+# THE single definition of the cap. Callers pass --part-b1 rather than
+# repeating the number, so pixi.toml, the Makefile and check_all.sh cannot
+# drift apart from each other or from this file.
+PART_B1_PAGE_LIMIT = 10
+
 # This used to be 0.25pt, to absorb two defects that are now fixed at source in
 # tex/msca-header.tex: LaTeX's `11pt` class option resolving to 10.95pt, and
 # microtype font expansion smearing each line by +/-1.5%. Both are gone -- the
@@ -95,7 +101,11 @@ BANNED_RE = re.compile(
 # Without this allowance, one ">=" in the prose would fail an otherwise perfect
 # document -- but note the alternative is worse: dropping newtx pulls in the
 # Computer Modern math fonts, which BANNED_RE rejects on sight.
-MATH_COMPANION_RE = re.compile(r"^(txsys|txexa|txmia|NewTX|ntx)", re.I)
+# ^tx / ^ntx covers every newtx companion (txsys, txsym, txexa, txmia, ...).
+# Narrower lists have bitten us: typing a tick pulled in txsym and hard-failed
+# an otherwise perfect document. BANNED_RE is tested first, so widening here
+# cannot admit a Latin Modern face.
+MATH_COMPANION_RE = re.compile(r"^(tx|ntx|NewTX)", re.I)
 
 # Superscript reference markers from the Nature CSL render at 8pt. They are
 # reference markers, not body prose -- "text elements other than the body
@@ -244,19 +254,52 @@ def body_bbox(page: "fitz.Page") -> "fitz.Rect | None":
     Args:
         page: The page to measure.
 
+    Images and vector graphics are measured too. They used to be invisible
+    here, because only text blocks carry a "lines" key -- which meant a Quarto
+    figure wider than the text column (`![](g.png){width=190mm}` against a
+    178 mm column) sat 4 mm from the paper edge while this function still
+    reported a 16 mm margin. A Gantt chart is expected in Section 3, so that
+    blind spot was one figure away from going live.
+
+    Args:
+        page: The page to measure.
+
     Returns:
-        The union of all non-footer text bounding boxes, or None if the page
-        has no body text.
+        The union of all non-footer body geometry, or None if the page carries
+        nothing measurable at all.
     """
     box: "fitz.Rect | None" = None
+
+    def add(rect: "fitz.Rect") -> None:
+        nonlocal box
+        if rect.is_empty or rect.is_infinite:
+            return
+        box = rect if box is None else (box | rect)
+
     for block in page.get_text("dict")["blocks"]:
         lines = block.get("lines", [])
         text = "".join(s["text"] for line in lines for s in line["spans"])
         if FOOTER_RE.search(text):
             continue
         for line in lines:
-            rect = fitz.Rect(line["bbox"])
-            box = rect if box is None else (box | rect)
+            add(fitz.Rect(line["bbox"]))
+
+    # Raster images: block type 1 in the dict, but get_image_rects is the
+    # reliable accessor for their placed rectangle.
+    for img in page.get_images(full=True):
+        for rect in page.get_image_rects(img[0]):
+            add(fitz.Rect(rect))
+
+    # Vector ink: table rules, boxes, drawn Gantt bars. A full-page background
+    # fill would swamp the measurement, so ignore anything that covers
+    # essentially the whole page.
+    page_area = abs(page.rect)
+    for drawing in page.get_drawings():
+        rect = fitz.Rect(drawing["rect"])
+        if abs(rect) > 0.95 * page_area:
+            continue
+        add(rect)
+
     return box
 
 
@@ -306,7 +349,10 @@ def check_fonts(doc: "fitz.Document") -> CheckResult:
     seen: dict[str, bool] = {}
     for page_index in range(doc.page_count):
         for xref, ext, _type, basefont, *_ in doc.get_page_fonts(page_index):
-            seen[strip_subset_prefix(basefont)] = ext != "n/a"
+            # AND, not assignment: a font unembedded on one page must stay
+            # unembedded even if a same-named embedded subset appears later.
+            name_ = strip_subset_prefix(basefont)
+            seen[name_] = seen.get(name_, True) and (ext != "n/a")
 
     banned, foreign, unembedded, allowed = [], [], [], []
     for name, embedded in sorted(seen.items()):
@@ -344,7 +390,7 @@ def check_fonts(doc: "fitz.Document") -> CheckResult:
     )
 
 
-def check_font_sizes(spans: Sequence[Span]) -> CheckResult:
+def check_font_sizes(spans: Sequence[Span], page_count: int = 0) -> CheckResult:
     """Check that body text is at least 11 pt and exempt text at least 8 pt.
 
     Args:
@@ -355,6 +401,8 @@ def check_font_sizes(spans: Sequence[Span]) -> CheckResult:
         cases stay visible even when the check passes.
     """
     floor = MIN_BODY_PT - SIZE_TOLERANCE_PT
+    inspected = [s for s in spans if s.text.strip()]
+    spans = inspected
     body_offenders: list[str] = []
     small_offenders: list[str] = []
     histogram: Counter[float] = Counter()
@@ -378,6 +426,24 @@ def check_font_sizes(spans: Sequence[Span]) -> CheckResult:
             )
 
     hist = ", ".join(f"{size}pt:{count}ch" for size, count in sorted(histogram.items()))
+
+    # Absence of offenders only means something if we actually inspected text.
+    # A rasterised page yields no spans, so every size rule was vacuously
+    # satisfied -- which used to report PASS on a page of 7pt scanned table.
+    if not histogram:
+        return CheckResult(
+            "Font size >= 11 pt", FAIL,
+            "no text spans found -- nothing could be measured, so this is not a pass",
+        )
+    pages_seen = {s.page for s in inspected}
+    missing = [n for n in range(1, page_count + 1) if n not in pages_seen]
+    if missing:
+        return CheckResult(
+            "Font size >= 11 pt", FAIL,
+            f"{len(missing)} page(s) contain no measurable text "
+            f"({', '.join(f'p{n}' for n in missing[:6])}) -- font size unverified "
+            f"there | histogram: {hist}",
+        )
     if body_offenders:
         return CheckResult(
             "Font size >= 11 pt",
@@ -407,12 +473,18 @@ def check_margins(doc: "fitz.Document") -> CheckResult:
     Returns:
         A :class:`CheckResult` reporting the tightest margin found per side.
     """
+    unmeasurable: list[int] = []
     worst = {"top": 1e9, "right": 1e9, "bottom": 1e9, "left": 1e9}
     worst_page = dict.fromkeys(worst, 0)
 
     for i, page in enumerate(doc, start=1):
         box = body_bbox(page)
         if box is None:
+            # A page we cannot measure is UNVERIFIED, not compliant. Skipping it
+            # is how a fully rasterised page used to sail through: its only text
+            # was the footer, so it contributed nothing and the check passed on
+            # the other pages' numbers.
+            unmeasurable.append(i)
             continue
         rect = page.rect
         measured = {
@@ -427,7 +499,15 @@ def check_margins(doc: "fitz.Document") -> CheckResult:
                 worst[side], worst_page[side] = value_mm, i
 
     if worst["top"] > 1e8:
-        return CheckResult("Margins >= 15 mm", FAIL, "no text found in document")
+        return CheckResult("Margins >= 15 mm", FAIL, "no measurable content in document")
+    if unmeasurable:
+        pages = ", ".join(f"p{n}" for n in unmeasurable[:6])
+        return CheckResult(
+            "Margins >= 15 mm",
+            FAIL,
+            f"{len(unmeasurable)} page(s) carry no measurable body content "
+            f"({pages}) -- margins cannot be verified, so this is not a pass",
+        )
 
     summary = ", ".join(
         f"{side} {worst[side]:.1f}mm (p{worst_page[side]})" for side in worst
@@ -517,7 +597,10 @@ def check_placeholders(doc: "fitz.Document") -> CheckResult:
     """
     hits: list[str] = []
     for i, page in enumerate(doc, start=1):
-        text = page.get_text()
+        # Normalise whitespace first: PDF text extraction breaks a run at the
+        # line end, so "[confirm the\nfacility]" would otherwise evade a
+        # literal-space pattern entirely.
+        text = re.sub(r"\s+", " ", page.get_text())
         for pattern in PLACEHOLDER_PATTERNS:
             for match in re.finditer(pattern + r".{0,45}", text, re.IGNORECASE | re.S):
                 excerpt = " ".join(match.group(0).split())
@@ -654,11 +737,22 @@ def run_checks(pdf_path: Path, max_pages: int | None) -> list[CheckResult]:
         raise FileNotFoundError(f"PDF not found: {pdf_path}")
 
     with fitz.open(pdf_path) as doc:
+        if doc.page_count == 0:
+            # Truncated or interrupted render. Bail before the per-page checks,
+            # which index page 0 and would raise IndexError, discarding every
+            # result computed so far.
+            return [
+                CheckResult(
+                    "Readable PDF", FAIL,
+                    f"{pdf_path} contains 0 pages -- the file is truncated or "
+                    "the render was interrupted; re-run `pixi run build`",
+                )
+            ]
         spans = list(iter_spans(doc))
         return [
             check_page_size(doc),
             check_fonts(doc),
-            check_font_sizes(spans),
+            check_font_sizes(spans, doc.page_count),
             check_margins(doc),
             check_footer(doc),
             check_page_count(doc, max_pages),
@@ -700,8 +794,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         description="Validate a Part B PDF against the MSCA-PF formatting rules.",
     )
     parser.add_argument("pdf", type=Path, help="path to the rendered PDF")
+    # Required, and mutually exclusive on purpose: there is no default. Every
+    # caller must state which page regime applies, so a limit can never be
+    # dropped by forgetting a flag.
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--max-pages", type=int, help="page limit (Part B-1: 10)")
+    group.add_argument(
+        "--part-b1",
+        action="store_true",
+        help=f"apply the official Part B-1 cap ({PART_B1_PAGE_LIMIT} pages)",
+    )
+    group.add_argument("--max-pages", type=int, help="an explicit page limit")
     group.add_argument(
         "--no-page-limit",
         action="store_true",
@@ -709,8 +811,29 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    max_pages = None if args.no_page_limit else args.max_pages
-    results = run_checks(args.pdf, max_pages)
+    if args.part_b1:
+        max_pages: int | None = PART_B1_PAGE_LIMIT
+    elif args.no_page_limit:
+        max_pages = None
+    else:
+        max_pages = args.max_pages
+
+    # A PDF that cannot be read is not a compliance failure, it is a broken
+    # input -- exit 2 so callers can tell the two apart. Without this the user
+    # gets a raw traceback, which reads as "the checker is broken" rather than
+    # "the file you pointed me at is".
+    try:
+        results = run_checks(args.pdf, max_pages)
+    except FileNotFoundError as exc:
+        print(f"CANNOT CHECK: {exc}", file=sys.stderr)
+        return 2
+    except RuntimeError as exc:  # fitz raises these for corrupt/empty/encrypted
+        print(
+            f"CANNOT CHECK: {args.pdf} is not a readable PDF ({exc}).\n"
+            "  Re-render it with `pixi run build`.",
+            file=sys.stderr,
+        )
+        return 2
     print_report(args.pdf, results)
 
     failures = [r for r in results if r.hard and r.status == FAIL]
@@ -761,7 +884,17 @@ def _self_check() -> None:
 
 
 if __name__ == "__main__":
-    if "--self-check" in sys.argv:
+    # --self-check runs the classifier assertions and nothing else. It must be
+    # the ONLY argument: sniffing for it anywhere in argv meant
+    # `... partB1.pdf --max-pages 10 --self-check` exited 0 without ever opening
+    # the PDF -- a one-flag bypass of the entire gate.
+    if "--self-check" in sys.argv[1:]:
+        if sys.argv[1:] != ["--self-check"]:
+            raise SystemExit(
+                "--self-check runs the internal assertions only and takes no "
+                "other arguments.\n"
+                "  Did you mean: check_msca_compliance.py <pdf> --part-b1"
+            )
         _self_check()
         raise SystemExit(0)
     raise SystemExit(main())

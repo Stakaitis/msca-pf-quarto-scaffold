@@ -1,95 +1,47 @@
 #!/usr/bin/env python3
-"""Fail the build if Part B-1 exceeds the MSCA page limit.
+"""Backwards-compatible shim: the page check is now a full compliance check.
 
-The MSCA-PF rules cap Part B-1 (Sections 1 + 2 + 3, including all tables,
-figures and references) at 10 A4 pages. This guard reads the rendered PDF
-and exits non-zero if the limit is exceeded, so an overflow is caught at
-build time instead of at submission.
+This script used to count pages and nothing else, which is how a US Letter,
+Latin Modern, footer-less PDF passed the build on 2026-07-28. The real checks
+live in ``check_msca_compliance.py``; this file only translates the old
+``<pdf> [limit]`` calling convention onto it, so every existing call site
+(pixi tasks, Makefile targets, the Dockerfile CMD) gets the full check without
+being rewritten.
+
+Prefer calling the real checker directly in anything new:
+
+    python scripts/check_msca_compliance.py _build/partB1.pdf --max-pages 10
 
 Usage:
     python scripts/check_pagecount.py <pdf_path> [limit]
-
-Args:
-    pdf_path: Path to the rendered Part B-1 PDF.
-    limit:    Maximum allowed pages (default: 10).
 """
 
 from __future__ import annotations
 
-import shutil
-import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-def count_pdf_pages(pdf_path: Path) -> int:
-    """Return the number of pages in a PDF, using the ``pdfinfo`` CLI.
-
-    ``pdfinfo`` ships with poppler, which ``pixi.toml`` pins and the Docker
-    image installs, so it is always present in a correctly built environment.
-
-    Args:
-        pdf_path: Path to the PDF file.
-
-    Returns:
-        The page count as an integer.
-
-    Raises:
-        FileNotFoundError: If ``pdf_path`` does not exist.
-        RuntimeError: If ``pdfinfo`` is missing or its output cannot be parsed.
-    """
-    if not pdf_path.is_file():
-        raise FileNotFoundError(f"PDF not found: {pdf_path}")
-
-    if not shutil.which("pdfinfo"):
-        raise RuntimeError(
-            "'pdfinfo' not found on PATH. It comes from poppler — run `pixi install`, "
-            "or use the Docker image."
-        )
-
-    out = subprocess.run(
-        ["pdfinfo", str(pdf_path)],
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout
-    for line in out.splitlines():
-        if line.startswith("Pages:"):
-            return int(line.split(":", 1)[1].strip())
-    raise RuntimeError("Could not parse page count from pdfinfo output.")
+from check_msca_compliance import main  # noqa: E402
 
 
-def main(argv: list[str]) -> int:
-    """Check the PDF page count against the limit.
+def main_shim(argv: list[str]) -> int:
+    """Translate the legacy positional CLI onto the compliance checker.
 
     Args:
-        argv: Command-line arguments (excluding the program name).
+        argv: Command-line arguments excluding the program name; the first is
+            the PDF path and the optional second is the page limit.
 
     Returns:
-        Process exit code: 0 if within the limit, 1 if exceeded.
+        Process exit code: 0 only if every hard compliance check passed.
     """
     if not argv:
         print("usage: check_pagecount.py <pdf_path> [limit]", file=sys.stderr)
         return 2
-
-    pdf_path = Path(argv[0])
-    limit = int(argv[1]) if len(argv) > 1 else 10
-
-    pages = count_pdf_pages(pdf_path)
-    margin = limit - pages
-
-    if pages > limit:
-        print(
-            f"❌ PART B-1 OVER LIMIT: {pages} pages (limit {limit}). "
-            f"Cut {pages - limit} page(s) before submitting.",
-            file=sys.stderr,
-        )
-        return 1
-
-    note = "at the limit" if margin == 0 else f"{margin} page(s) to spare"
-    print(f"✅ Part B-1: {pages}/{limit} pages ({note}).")
-    return 0
+    limit = argv[1] if len(argv) > 1 else "10"
+    return main([argv[0], "--max-pages", limit])
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1:]))
+    raise SystemExit(main_shim(sys.argv[1:]))

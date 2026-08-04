@@ -63,7 +63,7 @@
 <header>
   <h1>Quarto proposal scaffold — set up, write, render</h1>
   <p class="sub">Everything needed to reproduce this writing setup on a clean laptop, and to reuse it for a new proposal.</p>
-  <p class="meta">Written for the MSCA-PF Part B scaffold · toolchain: VS&nbsp;Code + Quarto + TinyTeX, managed by Pixi · optional Docker image for frozen builds · last verified 3 August 2026</p>
+  <p class="meta">Written for the MSCA-PF Part B scaffold · toolchain: VS&nbsp;Code + Quarto + TinyTeX, managed by Pixi · optional Docker image for frozen builds · last verified 4 August 2026</p>
 </header>
 
 <nav>
@@ -91,12 +91,15 @@
 <table>
   <tr><th>You get</th><th>How</th></tr>
   <tr><td>A4, 16&nbsp;mm margins, Times-metric font, 11&nbsp;pt body, single spacing, page footer</td><td>Encoded once in <code>_quarto.yml</code> + <code>tex/msca-header.tex</code></td></tr>
-  <tr><td>A hard page-limit guard</td><td><code>scripts/check_pagecount.py</code> — the build <em>fails</em> if you go over</td></tr>
+  <tr><td>A hard formatting gate</td><td><code>scripts/check_msca_compliance.py</code> — measures the rendered PDF against every MSCA rule (A4, Times fonts, 11&nbsp;pt, 15&nbsp;mm, footer, page cap, leftover placeholders). The build <em>fails</em> on any of them.</td></tr>
   <tr><td>Compact numbered citations from a BibTeX library</td><td><code>references.bib</code> + <code>nature.csl</code></td></tr>
   <tr><td>Live preview while writing</td><td><code>scripts/preview.sh</code> — hot-reloading HTML</td></tr>
   <tr><td>Word export for supervisor comments</td><td><code>pixi run proof</code></td></tr>
   <tr><td>A reproducible toolchain</td><td><code>pixi.toml</code> + <code>pixi.lock</code>, or the Docker image</td></tr>
 </table>
+<p class="small">Where these rules come from: the official MSCA <strong>Application form (V5.0, 27.03.2026), section 3.4 "Page limit and formatting"</strong>. It is reissued each call — re-check it against a new form before reusing this scaffold. Two details worth knowing: the body font is <strong>TeX Gyre Termes</strong>, which is metric-compatible with Times New Roman and accepted by MSCA under its other name <strong>Nimbus Roman No. 9 L</strong> (that is the answer if anyone asks why the form says "Times New Roman" and <code>pdffonts</code> says <code>TeXGyreTermes</code>); and captions, footnotes and the footer may be smaller than the body but <strong>never below 8&nbsp;pt</strong> — the footer is set at 9&nbsp;pt and captions at 10&nbsp;pt, legal only because of that floor.</p>
+<div class="box tip"><div class="lbl lbl-c">Before you write a word</div>
+Read <code>WRITING_METHOD.md</code> first (<code>pixi run method</code> renders it). It carries the per-section blueprint, the evaluator scoring rubric to self-assess against, the craft rules distilled from two funded example proposals, and a ranked register of what is currently wrong with this draft. This manual only tells you how to operate the machine.</div>
 <p>Two ways to get the toolchain. Pick one:</p>
 <div class="box tip"><div class="lbl lbl-c">Route A — Pixi <span class="pill a">recommended for writing</span></div>
 Native install, fast renders (~12&nbsp;s), live preview works, VS Code integration works. This is what you want day to day. Go to <a href="#setup">§2</a>.</div>
@@ -125,10 +128,19 @@ pixi run setup     <span class="c"># TinyTeX, a self-contained LaTeX distributio
 The first render then pulls any missing LaTeX packages from CTAN automatically. That needs a network connection once.</div></div>
 
 <div class="step"><div class="num">5</div><div class="body"><strong>Prove it works.</strong>
-<pre>pixi run pdf</pre>
-Success looks like this — a rendered file and a page count:
+<pre>pixi run build</pre>
+Success looks like this — every part rendered, then every PDF measured:
 <pre>Output created: _build/partB1.pdf
-&#9989; Part B-1: 9/10 pages (1 page(s) to spare).</pre></div></div>
+
+MSCA formatting compliance — _build/partB1.pdf
+  [PASS] A4 page size            all 9 pages 595x842pt
+  [PASS] Times fonts, embedded   5 font(s), all embedded: TeXGyreTermes-…
+  [PASS] Font size &gt;= 11 pt      histogram: 8.0pt:81ch, 9.0pt:180ch, …
+  [PASS] Margins &gt;= 15 mm        top 16.6mm, right 15.3mm, bottom 16.8mm, left 15.8mm
+  [PASS] Footer 'Part B - Page X of Y'  correct on all 9 pages
+  [PASS] Page limit              9/10 pages, 1 page(s) to spare
+COMPLIANT: all 7 hard checks passed.</pre>
+If any line says <code>FAIL</code>, the command exits non-zero and the PDF must not be submitted.</div></div>
 
 <div class="box danger"><div class="lbl lbl-c">Open the right folder</div>
 In VS Code, open <strong><code>MSCA/work</code></strong> — the folder that contains <code>pixi.toml</code> — <em>not</em> the parent <code>MSCA</code> folder. Every <code>pixi run</code> command fails from the parent with <code>could not find pixi.toml</code>, and the Quarto extension will not recognise the project. If you also want the reference PDFs visible, use <kbd>File</kbd> → <kbd>Add Folder to Workspace</kbd> to add the parent as a second root.</div>
@@ -168,14 +180,14 @@ On 3 August 2026 this image rendered the real Part B-1 with <code>--network none
 <h2 id="new"><span class="n">4</span>Starting a new proposal from this scaffold</h2>
 <p>The machinery is funder-agnostic apart from three files. To reuse it:</p>
 <div class="step"><div class="num">1</div><div class="body">Copy the folder, dropping the generated and project-specific parts:
-<pre>cp -R MSCA/work ~/Documents/NEW-PROPOSAL
+<pre>cp -R msca-quarto-scaffold ~/Documents/NEW-PROPOSAL
 cd ~/Documents/NEW-PROPOSAL
-rm -rf .pixi _build .quarto .git WRITING_METHOD.* review
-rm -f  sections/*.qmd references.bib todo.md lessons.md CLAUDE.md</pre></div></div>
+rm -rf .pixi _build .quarto .git
+# then replace the skeleton text in sections/*.qmd and partB2.qmd with your own</pre></div></div>
 <div class="step"><div class="num">2</div><div class="body">Adjust the three things that encode <em>this</em> funder's rules:
 <table>
   <tr><th>File</th><th>Change</th></tr>
-  <tr><td><code>scripts/check_pagecount.py</code></td><td>Called as <code>… partB1.pdf 10</code> — change <code>10</code> in <code>pixi.toml</code>/<code>Makefile</code> to the new page cap</td></tr>
+  <tr><td><code>scripts/check_all.sh</code></td><td>The single list of which PDFs exist and what limit each carries — <code>pixi.toml</code>, <code>Makefile</code> and <code>Dockerfile</code> all call this one script, so a changed cap is a one-line edit here. The rules themselves (A4, Times, 11&nbsp;pt, 15&nbsp;mm) are constants at the top of <code>scripts/check_msca_compliance.py</code>.</td></tr>
   <tr><td><code>tex/msca-header.tex</code></td><td>Font, margins and the <code>Part B - Page X of Y</code> footer text</td></tr>
   <tr><td><code>_quarto.yml</code></td><td>Margins (<code>geometry:</code>), font size, and the citation style (<code>csl:</code>)</td></tr>
 </table></div></div>
@@ -192,11 +204,11 @@ It serves <strong>http://localhost:4200/partB1.html</strong>. The port is fixed,
 <div class="step"><div class="num">3</div><div class="body"><strong>Put the preview beside your text.</strong> Either open that URL in a browser on a second monitor, or keep it inside VS Code: <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> → <em>Simple Browser: Show</em> → paste the URL. Drag the tab to the right half of the window.</div></div>
 <div class="step"><div class="num">4</div><div class="body"><strong>Edit <code>sections/_excellence.qmd</code></strong> (or whichever section) and hit <kbd>Cmd</kbd>+<kbd>S</kbd>. The preview rebuilds in about four seconds and refreshes itself.</div></div>
 <div class="step"><div class="num">5</div><div class="body"><strong>Check the real page count every few paragraphs:</strong>
-<pre>pixi run pdf</pre>
-This is the command that governs the document. Keep <code>_build/partB1.pdf</code> open in Preview.app and it refreshes on its own each time you rebuild.</div></div>
+<pre>pixi run build</pre>
+This is the command that governs the document — it is the only build that has been checked. Keep <code>_build/partB1.pdf</code> open in Preview.app and it refreshes on its own each time you rebuild.</div></div>
 
 <div class="box danger"><div class="lbl lbl-c">The preview shows prose, not pages</div>
-The live preview is <strong>HTML</strong>. It shows wording, structure and flow — it cannot show you pagination, because HTML has no pages. Only <code>pixi run pdf</code> tells you whether you are over the limit. Never judge "did that edit fit?" from the preview.</div>
+The live preview is <strong>HTML</strong>. It shows wording, structure and flow — it cannot show you pagination, because HTML has no pages. Only <code>pixi run build</code> tells you whether you are over the limit — or whether anything else about the formatting has drifted. Never judge "did that edit fit?" from the preview.</div>
 
 <div class="box warn"><div class="lbl lbl-c">Why a script instead of plain <code>quarto preview</code></div>
 Two Quarto behaviours, both verified on 3&nbsp;August 2026 with Quarto 1.9.38:
@@ -220,7 +232,7 @@ Two Quarto behaviours, both verified on 3&nbsp;August 2026 with Quarto 1.9.38:
   <tr><td><code>review/</code></td><td>Annotated files coming back from your supervisor. Kept out of <code>_build/</code> on purpose.</td></tr>
 </table>
 <div class="box danger"><div class="lbl lbl-c">Never keep anything in <code>_build/</code></div>
-<code>pixi run clean</code> is <code>rm -rf _build</code>. A supervisor's commented Word file left in there is one command away from gone. Put incoming files in <code>review/</code>.</div>
+<code>pixi run clean</code> is <code>rm -rf _build .quarto</code>. A supervisor's commented Word file left in there is one command away from gone. Put incoming files in <code>review/</code>.</div>
 
 <h2 id="syntax"><span class="n">7</span>Formatting cheat-sheet</h2>
 <table>
@@ -255,32 +267,35 @@ Any line it prints has an odd number of markers and needs fixing.</div>
 The word right after <code>{</code> — here <code>smith2024</code> — is the <em>key</em>.</div></div>
 <div class="step"><div class="num">2</div><div class="body">Cite it in the text: <code>&hellip;as recently shown [@smith2024].</code> Save and render; it appears with the right number.</div></div>
 <div class="box danger"><div class="lbl lbl-c">Rule</div>
-Only cite keys that exist in <code>references.bib</code>. A missing key renders as a broken <code>?</code> in the PDF. Never invent a DOI — omit the line if you do not have one.</div>
+Only cite keys that exist in <code>references.bib</code>. A missing key renders as a broken <code>?</code> in the PDF. <strong>Never invent a DOI</strong> — omit the line if you do not have one. Which keys are allowed at all, and what evidence a claim needs before it can be cited, is <code>CLAUDE.md</code> § Claim guardrails.</div>
 
 <h2 id="render"><span class="n">9</span>Rendering: PDF, Word, HTML</h2>
 <p>All commands run from the folder containing <code>pixi.toml</code>.</p>
 <table>
   <tr><th>Command</th><th>What it does</th><th>Speed</th></tr>
-  <tr><td><code>pixi run pdf</code></td><td>Builds Part B-1 <em>and</em> enforces the page limit. <strong>Your main command.</strong></td><td>~12 s</td></tr>
+  <tr><td><code>pixi run build</code></td><td>Renders <em>every</em> part, then validates every PDF against the full MSCA rule set. <strong>Your main command — the only sanctioned build.</strong></td><td>~25 s</td></tr>
+  <tr><td><code>pixi run pdf</code></td><td>Part B-1 only, validated. Faster loop while writing Sections 1–3.</td><td>~12 s</td></tr>
   <tr><td><code>pixi run preview</code></td><td>Live hot-reloading HTML on <code>localhost:4200</code></td><td>~4 s / save</td></tr>
-  <tr><td><code>pixi run b2</code></td><td>Builds Part B-2. No page limit.</td><td>~10 s</td></tr>
+  <tr><td><code>pixi run b2</code></td><td>Part B-2 only, validated. No page limit.</td><td>~10 s</td></tr>
   <tr><td><code>pixi run proof</code></td><td>Word file for a Grammarly or supervisor pass, and opens it</td><td>~2 s</td></tr>
+  <tr><td><code>pixi run docx</code></td><td>Renders <em>both</em> parts to Word, without opening them. <code>proof</code> is the one-part shortcut that opens the file.</td><td>~4 s</td></tr>
   <tr><td><code>pixi run method</code></td><td>Rebuilds <code>WRITING_METHOD.html</code> from the markdown</td><td>~4 s</td></tr>
-  <tr><td><code>pixi run all</code></td><td>Both parts, plus the page check</td><td>~20 s</td></tr>
-  <tr><td><code>pixi run check</code></td><td>Re-runs the page check on the last build, without rendering</td><td>instant</td></tr>
+  <tr><td><code>pixi run all</code></td><td>Alias for <code>build</code></td><td>~25 s</td></tr>
+  <tr><td><code>pixi run check</code></td><td>Re-validates the last build, without re-rendering</td><td>instant</td></tr>
+  <tr><td><code>pixi run hooks</code></td><td>Installs the pre-commit hook that blocks committing a non-compliant PDF. Run once per clone.</td><td>instant</td></tr>
   <tr><td><code>pixi run clean</code></td><td>Deletes <code>_build/</code> and <code>.quarto/</code></td><td>instant</td></tr>
 </table>
-<p class="small">Prefer <code>make</code>? <code>make pdf</code>, <code>make preview</code>, <code>make b2</code>, <code>make check</code>, <code>make clean</code> all work identically.</p>
+<p class="small">Prefer <code>make</code>? <code>make setup</code>, <code>make build</code>, <code>make pdf</code>, <code>make preview</code>, <code>make b2</code>, <code>make all</code>, <code>make check</code>, <code>make hooks</code> and <code>make clean</code> all exist. <strong>They do not go through Pixi</strong> — the Makefile calls <code>quarto</code> and <code>python</code> straight off your <code>PATH</code>, so this route only works if you already have Quarto, a TeX engine and PyMuPDF installed. There are no <code>make</code> equivalents of <code>proof</code>, <code>docx</code> or <code>method</code>.</p>
 <div class="box warn"><div class="lbl lbl-c">Word is for feedback only</div>
 The <code>.docx</code> carries the full text, headings, tables, numbered citations and reference list, so a supervisor can comment. But it <strong>drops the layout</strong> — A4, margins, the Times font, the footer, the pagination — and Word does not enforce the page limit. <strong>Always submit the PDF</strong>, and re-check the page count after folding in any edits.</div>
 
 <h2 id="pages"><span class="n">10</span>The page limit</h2>
 <div class="box danger"><div class="lbl lbl-c">Critical</div>
-Part B-1 must be <strong>10 pages or fewer</strong>. The submission system makes everything past page 10 <em>invisible to evaluators</em> — an overflow does not error, it silently deletes your Implementation tables. The build guards this: <code>pixi run pdf</code> prints the count and fails if you exceed it.</div>
+Part B-1 must be <strong>10 pages or fewer</strong>. The submission system makes everything past page 10 <em>invisible to evaluators</em> — an overflow does not error, it silently deletes your Implementation tables. The build guards this: <code>pixi run build</code> prints the count and fails if you exceed it.</div>
 <p>If an edit pushes you over, shorten the new text or trim elsewhere, then re-render until it fits. Two things to know about how the pages move:</p>
 <ul>
   <li><strong>Page breaks jump in whole lines,</strong> because tables become <code>longtable</code>s that cannot split gracefully. Never judge a trim by "it looks shorter" — judge it by the number the build prints.</li>
-  <li><strong>Switching to a numeric citation style</strong> (already done here, via <code>nature.csl</code>) is the single biggest space saving available, and it costs you no content.</li>
+  <li><strong>The numeric citation style is already on</strong> (<code>nature.csl</code>, via the <code>csl:</code> line in <code>_quarto.yml</code>) — that lever is spent. The remaining levers are structural, not verbal: trim the reference list, convert a table to prose, or drop 1&nbsp;mm of margin. The measured cut order is <code>WRITING_METHOD.md</code> device <strong>C24</strong>.</li>
 </ul>
 
 <h2 id="spell"><span class="n">11</span>Spelling &amp; grammar</h2>
@@ -293,10 +308,10 @@ Part B-1 must be <strong>10 pages or fewer</strong>. The submission system makes
 <div class="box danger"><div class="lbl lbl-c">Never paste the Word text back over the .qmd</div>
 The round-trip has already converted <code>[@key]</code> into plain superscript numerals and flattened the tables. Pasting it back destroys every citation silently — they will look fine until you rebuild and the reference list is empty.</div>
 <div class="box warn"><div class="lbl lbl-c">Suggestions to refuse</div>
-Set Grammarly to <strong>Formal / Academic / Expert</strong>, and reject anything that removes a calibrated hedge — "to our knowledge", "may", "could", "candidate sites". Those words are load-bearing: deleting one upgrades a claim above the evidence behind it, which is the most damaging edit available in a proposal. Also refuse changes inside tables, and hyphens replacing en-dashes in ranges such as <code>2018–2023</code> or <code>WP1–WP3</code>.</div>
+Set Grammarly to <strong>British English · Formal · Academic · Expert · Neutral</strong> — never "Confident" or "Engaging". Reject anything that removes a calibrated hedge: deleting one upgrades a claim above the evidence behind it, which is the most damaging edit available in a proposal. Also refuse changes inside tables, and hyphens replacing en-dashes in ranges such as <code>2018–2023</code> or <code>WP1–WP3</code>. <strong>The full seven-row reject list with reasons is <code>WRITING_METHOD.md</code> §A.4; the protected hedge strings themselves are in <code>CLAUDE.md</code> § Claim guardrails.</strong> Do not retype either list here.</div>
 
 <h2 id="git"><span class="n">12</span>Version control &amp; undo</h2>
-<p>The project is a git repository. Use it instead of copying files to <code>backups/</code> by hand — that habit produced 76 stray <code>.bak</code> files here before it was retired.</p>
+<p>The project is a git repository. Use it instead of copying files to <code>backups/</code> by hand — that habit produced 57 stray <code>.bak</code> files under <code>backups/</code> before it was retired — every one preserved in the first commit, so nothing was lost.</p>
 <pre><span class="c"># before a risky edit</span>
 git add -A &amp;&amp; git commit -m "before rewriting 1.2"
 
@@ -312,7 +327,18 @@ git log --oneline</pre>
 
 <h2 id="dont"><span class="n">13</span>Never touch these</h2>
 <div class="box warn"><div class="lbl lbl-c">Leave alone</div>
-<code>_quarto.yml</code>, the <code>tex/</code> folder, <code>nature.csl</code>, and <code>scripts/check_pagecount.py</code>. These enforce compliance — page size, margins, font, footer, citation numbering, the page guard. Editing them can break the rules silently, in ways the build will not warn you about. In particular: do not add a cover page or a table of contents, and never shrink table text below the body size.</div>
+<code>_quarto.yml</code>, the <code>tex/</code> folder, <code>nature.csl</code>, and everything in <code>scripts/</code>. These enforce compliance — page size, margins, font, footer, citation numbering, and the gate that measures all of it. Editing them can break the rules silently. One trap in particular: <strong>every <code>.qmd</code> that becomes a PDF must be listed under <code>project.render</code> in <code>_quarto.yml</code></strong>. A file left off that list is rendered standalone, without the format block, and comes out US Letter in Latin Modern with no footer — see <code>lessons.md</code>. In particular: do not add a cover page or a table of contents, and never shrink table text below the body size.</div>
+
+<h3>The knobs you <em>may</em> turn</h3>
+<p>The rules above come from the official Application form (V5.0, 27.03.2026), §3.4. Four
+things inside them are genuinely adjustable:</p>
+<table>
+  <tr><th>Knob</th><th>Where</th><th>Note</th></tr>
+  <tr><td>Margins</td><td><code>geometry:</code> in <code>_quarto.yml</code></td><td>Currently 16 mm. The MSCA minimum is 15 mm — measured on the built PDF as left 15.9 / right 15.2 / top 16.2 / bottom 15.2 mm, so the 1 mm buffer is real. Drop to 15 mm for maximum writing space.</td></tr>
+  <tr><td>Citation style</td><td><code>csl:</code> in <code>_quarto.yml</code></td><td>Already numeric via <code>nature.csl</code>. Superscript numerals are far more compact than author–date; swap for any style from <a href="https://www.zotero.org/styles">zotero.org/styles</a>.</td></tr>
+  <tr><td>Footer "of Y"</td><td><code>tex/msca-header.tex</code></td><td>Prints the real page total. To print "of 10" instead, replace <code>\pageref{LastPage}</code> with <code>10</code> — see the one-line note in the file.</td></tr>
+  <tr><td>TeX engine</td><td><code>pdf-engine:</code> in <code>_quarto.yml</code></td><td>Default <code>pdflatex</code> + <code>tgtermes</code>. Also compiles with <code>xelatex</code>/<code>lualatex</code> (add <code>mainfont: "TeX Gyre Termes"</code>, which gets you effortless Unicode and makes the mapping block in the header unnecessary), or <code>tectonic</code> if you want a self-fetching engine.</td></tr>
+</table>
 
 <h2 id="trouble"><span class="n">14</span>If something breaks</h2>
 <table>
@@ -332,7 +358,7 @@ git log --oneline</pre>
 </table>
 
 <footer>
-  <strong>Pre-submission checklist.</strong> <code>pixi run all</code> — Part B-1 must be at or under the page limit · resolve every <code>[confirm]</code>, <code>[SEARCH DATE]</code> and <code>&lt;!-- TODO cite --&gt;</code> · run the unbalanced-<code>**</code> grep · <code>pdffonts _build/partB1.pdf</code> must show every font as embedded (<code>yes</code>) · confirm the PDF is text-searchable, because evaluators keyword-search it · read the whole thing once, end to end, on paper.
+  <strong>Pre-submission checklist.</strong> <code>pixi run build</code> must exit 0 — that one command covers the page limit, A4, Times fonts and their embedding, 11&nbsp;pt, 15&nbsp;mm margins, the footer, and every leftover <code>[confirm]</code>, <code>[SEARCH DATE]</code>, <code>TODO cite</code> and stray <code>**</code> · confirm the PDF is text-searchable, because evaluators keyword-search it · read the whole thing once, end to end, on paper.
 </footer>
 
 </div>

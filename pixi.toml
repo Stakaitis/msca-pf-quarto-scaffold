@@ -1,8 +1,12 @@
 # =====================================================================
 #  Reproducible build environment (Pixi).
 #  First time:   pixi run setup      (installs a local TeX engine)
-#  Every build:  pixi run pdf        (renders Part B-1 + checks page limit)
+#  Every build:  pixi run build      (renders EVERY part + validates all of them)
 #  Live preview: pixi run preview
+#
+#  `pixi run build` is the only sanctioned build. A bare `quarto render`
+#  produces a PDF nobody has checked — that is how the 2026-07-28 US Letter /
+#  Latin Modern / no-footer render reached the _build directory.
 # =====================================================================
 [project]
 name = "msca-pf-proposal"
@@ -14,7 +18,8 @@ platforms = ["linux-64", "osx-64", "osx-arm64", "win-64"]
 [dependencies]
 quarto = ">=1.5"
 python = ">=3.11"
-poppler = "*"        # provides pdfinfo / pdffonts for the page-count guard & checks
+poppler = "*"        # pdfinfo / pdffonts, for eyeballing a PDF by hand
+pymupdf = ">=1.24"   # page geometry, fonts and character sizes for the compliance gate
 
 [tasks]
 # One-time: install a self-contained TeX (TinyTeX). Quarto then auto-installs
@@ -22,17 +27,22 @@ poppler = "*"        # provides pdfinfo / pdffonts for the page-count guard & ch
 # on the first render.
 setup = "quarto install tinytex --no-prompt --update-path"
 
-# Build Part B-1 and immediately verify it fits in 10 pages.
-pdf = { cmd = "quarto render partB1.qmd && python scripts/check_pagecount.py _build/partB1.pdf 10" }
+# THE ENTRY POINT. Renders every part, then validates every rendered PDF
+# against the full MSCA formatting rule set. Non-zero exit on any hard failure,
+# so a non-compliant PDF cannot be produced without the build saying so.
+build = { cmd = "quarto render && sh scripts/check_all.sh" }
 
-# Build Part B-2 (no page limit).
-b2 = "quarto render partB2.qmd"
+# Build Part B-1 alone and validate it (faster loop while writing Section 1-3).
+pdf = { cmd = "quarto render partB1.qmd && python scripts/check_msca_compliance.py _build/partB1.pdf --max-pages 10" }
+
+# Build Part B-2 alone and validate it.
+b2 = { cmd = "quarto render partB2.qmd && python scripts/check_msca_compliance.py _build/partB2.pdf --no-page-limit" }
 
 # Render both parts to editable Microsoft Word (.docx) for supervisor feedback.
 docx = "quarto render partB1.qmd --to docx && quarto render partB2.qmd --to docx"
 
-# Build everything.
-all = { cmd = "quarto render && python scripts/check_pagecount.py _build/partB1.pdf 10" }
+# Alias kept so old muscle memory still lands on the checked build.
+all = { depends-on = ["build"] }
 
 # Live hot-reloading preview while you write (HTML — fast, reacts to edits in
 # sections/). Shows prose and flow, NOT pagination: use `pixi run pdf` for that.
@@ -46,8 +56,11 @@ proof = { cmd = "quarto render partB1.qmd --to docx && open _build/partB1.docx" 
 # (left TOC, searchable). Edit WRITING_METHOD.md, then run this.
 method = { cmd = "quarto render WRITING_METHOD.md --to html && open WRITING_METHOD.html" }
 
-# Re-run only the page-limit check on the last build.
-check = "python scripts/check_pagecount.py _build/partB1.pdf 10"
+# Re-run the compliance check on the last build, without re-rendering.
+check = "sh scripts/check_all.sh"
+
+# Install the git pre-commit hook that blocks committing a non-compliant PDF.
+hooks = "sh scripts/install_hooks.sh"
 
 # Remove build artefacts.
 clean = "rm -rf _build .quarto"

@@ -1,9 +1,9 @@
 # syntax=docker/dockerfile:1.7
 # ─────────────────────────────────────────────────────────────────
-# MSCA-PF proposal toolchain — Quarto + TinyTeX + poppler, pinned.
+# MSCA-PF proposal toolchain — Quarto + TinyTeX + poppler + PyMuPDF, pinned.
 #
 # Base : debian:bookworm-slim                          (~30 MB)
-# Deps : pixi -> quarto, python, poppler via pixi.lock  (~1.4 GB)
+# Deps : pixi -> quarto, python, poppler, pymupdf via pixi.lock  (~1.4 GB)
 # TeX  : TinyTeX + the packages tex/msca-header.tex needs (~700 MB)
 # Total: ~2.35 GB on disk (measured). Big, but it is a frozen LaTeX
 #        distribution — that is the whole point: no CTAN fetch at render
@@ -12,7 +12,7 @@
 # VERIFIED 2026-08-03: renders Part B-1 with `--network none` (fully
 # offline) to 9/10 pages with all four TeX Gyre Termes faces embedded.
 #
-# WHY THIS EXISTS: `pixi install` alone pins Quarto/Python/poppler, but
+# WHY THIS EXISTS: `pixi install` alone pins Quarto/Python/poppler/PyMuPDF, but
 # TinyTeX still downloads LaTeX packages from CTAN on first render. That
 # step is networked and mutable, so it is the one part of the build that
 # can drift or fail offline. This image bakes it in.
@@ -26,7 +26,7 @@
 #   docker build --platform linux/amd64 -t msca:latest .
 #
 # Render the proposal (mount your project, outputs land in _build/):
-#   docker run --rm --platform linux/amd64 -v "$PWD:/work" msca:latest pixi run pdf
+#   docker run --rm --platform linux/amd64 -v "$PWD:/work" msca:latest pixi run build
 #
 # Live preview on http://localhost:4200 :
 #   docker run --rm --platform linux/amd64 -p 4200:4200 -v "$PWD:/work" msca:latest \
@@ -50,7 +50,7 @@ ENV PATH="/root/.pixi/bin:${PATH}"
 WORKDIR /opt/toolchain
 
 # Solve the environment from the lock file, so the container gets exactly the
-# Quarto/Python/poppler builds the lock records — not "whatever is current".
+# Quarto/Python/poppler/PyMuPDF builds the lock records — not "whatever is current".
 COPY pixi.toml pixi.lock ./
 RUN pixi install --locked
 
@@ -62,7 +62,7 @@ RUN pixi run quarto install tinytex --no-prompt
 # name is not stable across TinyTeX releases.
 RUN for d in /root/.TinyTeX/bin/*/; do ln -sf "$d"* /usr/local/bin/; done && tlmgr --version
 RUN tlmgr install \
-        tgtermes textcomp amssymb newunicodechar fancyhdr lastpage \
+        tgtermes textcomp newtx newunicodechar fancyhdr lastpage \
         titlesec enumitem caption microtype \
         geometry hyperref xcolor booktabs longtable etoolbox \
         koma-script unicode-math upquote fvextra footnotebackref \
@@ -95,6 +95,8 @@ RUN printf '#!/bin/sh\nfor f in "$CONDA_PREFIX"/etc/conda/activate.d/*.sh; do [ 
 
 WORKDIR /work
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-# Default: exactly what `pixi run pdf` does on the host — render, then enforce
-# the 10-page cap. Override with any command, e.g. `quarto render partB2.qmd`.
-CMD ["sh", "-c", "quarto render partB1.qmd && python scripts/check_pagecount.py _build/partB1.pdf 10"]
+# Default: exactly what `pixi run build` does on the host — render every part,
+# then validate every PDF against the full MSCA formatting rule set (A4, Times,
+# 11 pt, 15 mm, footer, page cap, placeholders). Non-zero exit on any failure.
+# Override with any command, e.g. `quarto render partB2.qmd`.
+CMD ["sh", "-c", "quarto render && sh scripts/check_all.sh"]

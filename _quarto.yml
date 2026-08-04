@@ -5,6 +5,10 @@
 # =====================================================================
 project:
   output-dir: _build
+  # EVERY .qmd that can become a PDF must be listed here. A file left off this
+  # list is rendered *standalone* — Quarto does not merge the `format:` block
+  # below into it, so it silently comes out as US Letter / Latin Modern with no
+  # Adding a new .qmd? Add it here in the same commit, then `pixi run build`.
   render:
     - partB1.qmd
     - partB2.qmd
@@ -24,6 +28,11 @@ format:
     #     safety buffer so optical punctuation never measures under 15 mm).
     #     Lower to 15mm for maximum space, or raise for more white space. ---
     geometry:
+      # a4paper is repeated here on purpose. papersize + classoption above
+      # already ask for A4; geometry is the package that actually writes
+      # \pdfpagewidth/\pdfpageheight, and it wins over both. Belt and braces —
+      # a stray letterpaper default is what produced the 612x792 render.
+      - a4paper
       - top=16mm
       - bottom=16mm
       - left=16mm

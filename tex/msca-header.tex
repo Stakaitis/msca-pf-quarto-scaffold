@@ -17,13 +17,24 @@
 % ---- Body font: TeX Gyre Termes (= Times New Roman / Nimbus Roman No. 9 L) ----
 \usepackage[T1]{fontenc}
 \usepackage{tgtermes}          % free, embedded, metric-compatible with Times New Roman
+% Serif is the default family for EVERYTHING, headings included. Without this
+% line a class or package that sets \familydefault to \sfdefault silently puts
+% headings in a sans face (the 2026-07-28 render used LMSans for headings).
+% Never load helvet, or any package that sets \familydefault{\sfdefault}.
+\renewcommand{\familydefault}{\rmdefault}
 
 % ---- Let common Unicode symbols "just work" under pdfLaTeX ----
 % So you can type >=, <=, x, +-, ->, degree, micro, Greek letters etc. straight
 % into the text without build errors. (If you need lots of exotic Unicode,
 % switch pdf-engine to lualatex in _quarto.yml and delete this block.)
+%
+% newtxmath, NOT amssymb: the AMS symbol fonts are Computer Modern, so a single
+% ">=" in the prose used to embed LMMathSymbols10 in an otherwise pure-Times
+% PDF. newtxmath ships Times-matched math (txsys, NewTXMI) and provides every
+% AMS symbol these mappings need, including \checkmark.
 \usepackage{textcomp}
-\usepackage{amssymb}
+\usepackage{amsmath}           % must precede newtxmath
+\usepackage{newtxmath}
 \usepackage{newunicodechar}
 \newunicodechar{≥}{\ensuremath{\geq}}
 \newunicodechar{≤}{\ensuremath{\leq}}
@@ -87,3 +98,25 @@
 
 % ---- Sensible microtype spacing to fit more text without shrinking font ----
 \usepackage{microtype}
+
+% ---- Compact reference list, WITHOUT dropping below 11 pt ----
+% The bibliography counts toward the 10-page limit, so every line matters.
+% Three levers, none of which touches the font size:
+%   1. zero blank space between entries (default is \parskip per entry),
+%   2. a narrower number column — Quarto reserves 3 em, but "42." needs ~1.6 em,
+%      and the 1.4 em saved widens every single line of the reference list,
+%   3. black link text inside the bibliography (still clickable, just not blue).
+% Wrapped in \AtBeginDocument because Quarto defines these lengths and the
+% CSLReferences environment itself in the preamble, and we must land after it.
+\usepackage{etoolbox}
+% (\ifcsname, not \@ifundefined: header-includes lands in the document
+%  preamble, where @ is not a letter. partB2 has no bibliography at all, so
+%  every one of these must degrade to a no-op rather than an error.)
+\AtBeginDocument{%
+  \ifcsname cslentryspacingunit\endcsname\setlength{\cslentryspacingunit}{0pt}\fi
+  \ifcsname csllabelwidth\endcsname\setlength{\csllabelwidth}{1.6em}\fi
+  \ifcsname cslhangindent\endcsname\setlength{\cslhangindent}{0pt}\fi
+  \ifcsname CSLReferences\endcsname
+    \AtBeginEnvironment{CSLReferences}{\hypersetup{urlcolor=black,linkcolor=black,citecolor=black}}%
+  \fi
+}

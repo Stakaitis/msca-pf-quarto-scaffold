@@ -215,13 +215,24 @@
 %   3. \tabcolsep is horizontal, but it pays vertically: narrower gutters mean
 %      more characters per line, so fewer wrapped lines in the p{} columns that
 %      make these tables tall in the first place.
-\renewcommand{\arraystretch}{1.05}
+% MEASURED 2026-08-05, when Part B-1 was 11 pages against a hard 10.
+% The diagnosis handed over was "flushbottom stretches glue around tables";
+% that is REFUTED -- adding \raggedbottom changed nothing, so \flushbottom was
+% never active. The whitespace was genuinely unused space at page bottoms, and
+% it was concentrated in one place: page 8 stopped 158 pt (about 11 lines)
+% early because the next table row would not fit in what remained.
+%
+% Two settings recovered the page, and margins were deliberately NOT touched:
+% dropping the vertical margin to 15.5 mm also gives 10 pages, but the bottom
+% margin then MEASURES 15.2 mm against a 15 mm rule -- a 0.2 mm buffer on a
+% document that is still being edited. 16 mm stays.
+\renewcommand{\arraystretch}{1.0}
 \setlength{\tabcolsep}{4pt}
 % \ifcsname, not \@ifundefined: this file lands in the document preamble, where
 % @ is not a letter. abstract.qmd has no tables, so longtable may never load and
 % \LTpre may not exist -- this must degrade to a no-op, not an error.
 \AtBeginDocument{%
-  \ifcsname LTpre\endcsname\setlength{\LTpre}{4pt}\setlength{\LTpost}{4pt}\fi
+  \ifcsname LTpre\endcsname\setlength{\LTpre}{2pt}\setlength{\LTpost}{2pt}\fi
 }
 
 % ---- Captions a touch smaller (allowed: >= 8 pt), still clearly legible ----

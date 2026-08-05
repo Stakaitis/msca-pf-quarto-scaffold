@@ -29,7 +29,7 @@ setup:
 	$(QUARTO) install tinytex --no-prompt --update-path
 
 build:
-	$(QUARTO) render
+	sh scripts/render_all.sh
 	PYTHON="$(PYTHON)" sh scripts/check_all.sh
 
 pdf:
@@ -52,4 +52,4 @@ hooks:
 	sh scripts/install_hooks.sh
 
 clean:
-	rm -rf $(BUILD) .quarto
+	rm -rf $(BUILD) .quarto *_files *.tex *.pdf

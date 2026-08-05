@@ -1,0 +1,50 @@
+{
+  // Run these with Cmd+Shift+B (the default build task) or
+  // Cmd+Shift+P -> "Tasks: Run Task" for the rest.
+  "version": "2.0.0",
+  "tasks": [
+    {
+      // Cmd+Shift+B. The fast loop: renders Part B-1 and checks it against
+      // every MSCA rule, including the page count. ~15 s.
+      "label": "PDF: Part B-1 + compliance check",
+      "type": "shell",
+      "command": "pixi run pdf",
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true,
+        "focus": false
+      },
+      "problemMatcher": []
+    },
+    {
+      // Before you stop for the day, or before sending anything out: renders
+      // every part AND every Word file, and validates all of them.
+      "label": "PDF: build and check EVERYTHING",
+      "type": "shell",
+      "command": "pixi run build",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      // Live HTML preview on localhost:4200. Leave it running all session; it
+      // reloads on save. It shows prose and flow, never pagination.
+      "label": "Preview: live HTML (localhost:4200)",
+      "type": "shell",
+      "command": "pixi run preview",
+      "isBackground": true,
+      "presentation": { "reveal": "silent", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      // Re-check the last build without re-rendering. Instant.
+      "label": "Check: re-run compliance on the last build",
+      "type": "shell",
+      "command": "pixi run check",
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "problemMatcher": []
+    }
+  ]
+}

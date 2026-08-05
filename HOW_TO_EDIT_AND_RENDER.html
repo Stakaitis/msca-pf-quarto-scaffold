@@ -179,10 +179,20 @@ docker run --rm -it --platform linux/amd64 -v "$PWD:/work" --entrypoint bash msc
 It serves <strong>http://localhost:4200/partB1.html</strong>. The port is fixed, so the URL never changes.</div></div>
 <div class="step"><div class="num">3</div><div class="body"><strong>Put the preview beside your text.</strong> Either open that URL in a browser on a second monitor, or keep it inside VS Code: <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> → <em>Simple Browser: Show</em> → paste the URL, then drag the tab to the right half.</div></div>
 <div class="step"><div class="num">4</div><div class="body"><strong>Edit a file in <code>sections/</code></strong> and hit <kbd>Cmd</kbd>+<kbd>S</kbd>. The preview rebuilds in a few seconds and refreshes itself.</div></div>
-<div class="step"><div class="num">5</div><div class="body"><strong>Run the real build every few paragraphs:</strong>
-<pre>pixi run build</pre>
+<div class="step"><div class="num">5</div><div class="body"><strong>Run the real build every few paragraphs — <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd>.</strong>
+That is the default build task in <code>.vscode/tasks.json</code>; it runs
+<code>pixi run pdf</code>, renders Part B-1 and checks it against every rule. Three more
+under <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> &rarr; <em>Tasks: Run Task</em>: build and
+check everything, start the live preview, and re-check without rendering.
+<pre>pixi run build   <span class="c"># or Cmd+Shift+B for Part B-1 alone</span></pre>
 This is the command that governs the document. Keep <code>_build/partB1.pdf</code> open in a viewer and it refreshes each time.</div></div>
 
+<div class="box tip"><div class="lbl lbl-c">Keep the PDF beside your text</div>
+Install the recommended <code>tomoki1207.pdf</code> extension, then right-click
+<code>_build/partB1.pdf</code> in the Explorer &rarr; <em>Open to the Side</em>. That tab
+reloads itself whenever the file changes, so after <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd>
+the new render simply appears. Quarto's own preview cannot show a PDF: pointed at
+PDF it renders once and then fails on every rebuild.</div>
 <div class="box danger"><div class="lbl lbl-c">The preview shows prose, not pages</div>
 The live preview is <strong>HTML</strong>. It shows wording, structure and flow — it cannot show pagination, because HTML has no pages. Only <code>pixi run build</code> tells you whether you are over the limit. Never judge "did that edit fit?" from the preview.</div>
 

@@ -10,8 +10,8 @@ the PDF: A4, 16 mm margins, Times New Roman 11 pt, and a
 This is a generator rather than a committed binary so the styling is reviewable
 as text and regenerable when pandoc's template changes.
 
-    python scripts/make_reference_docx.py            # writes tex/msca-reference.docx
-    python scripts/make_reference_docx.py --check    # verify the existing file
+    python scripts/word/make_reference.py            # writes tex/msca-reference.docx
+    python scripts/word/make_reference.py --check    # verify the existing file
 
 WHAT IT CANNOT DO: make Word paginate identically to LaTeX. Word and TeX break
 lines and justify differently, so the same text at the same size in the same

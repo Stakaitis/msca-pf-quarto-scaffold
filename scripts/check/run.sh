@@ -16,12 +16,12 @@ set -u
 # compliance failure rather than a wrong working directory.
 cd "$(dirname "$0")/.." || exit 2
 
-[ -f scripts/check_msca_compliance.py ] || {
-    echo "check_all.sh: scripts/check_msca_compliance.py not found" >&2
+[ -f scripts/check/compliance.py ] || {
+    echo "run.sh: scripts/check/compliance.py not found" >&2
     exit 2
 }
 
-CHECK="${PYTHON:-python} scripts/check_msca_compliance.py"
+CHECK="${PYTHON:-python} scripts/check/compliance.py"
 status=0
 
 # Part B-1 is the only document with a page limit: 10 pages, hard.

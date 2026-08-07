@@ -13,5 +13,5 @@ To re-sync after upstream changes:
        work/scripts/gantt/
 
 Do not edit these two files here — MSCA-specific settings live in
-`scripts/make_gantt.py`, which drives them. Editing in place makes the next
+`scripts/gantt/make.py`, which drives them. Editing in place makes the next
 re-sync silently discard your changes.

@@ -99,4 +99,4 @@ ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 # then validate every PDF against the full MSCA formatting rule set (A4, Times,
 # 11 pt, 15 mm, footer, page cap, placeholders). Non-zero exit on any failure.
 # Override with any command, e.g. `quarto render partB2.qmd`.
-CMD ["sh", "-c", "quarto render && sh scripts/check_all.sh"]
+CMD ["sh", "-c", "quarto render && sh scripts/check/run.sh"]

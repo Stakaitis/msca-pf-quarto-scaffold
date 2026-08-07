@@ -123,13 +123,13 @@ the PDF remains the authority for the 10-page limit.
 
 1. **`quarto preview` watches only the file you name.** Files pulled in with
    `{{< include >}}` are *not* watched, so editing a section leaves the preview silently
-   stale. `scripts/preview.sh` nudges the master file when a section changes.
+   stale. `scripts/build/preview.sh` nudges the master file when a section changes.
 2. **`quarto preview` pointed at PDF renders once, then fails on every rebuild.** The
    live loop therefore runs on HTML, which reloads cleanly.
 
 HTML shows prose and flow; it cannot show pagination. Use `pixi run build` for that.
 
-`scripts/render_all.sh` also renders each document individually rather than using
+`scripts/build/render.sh` also renders each document individually rather than using
 project mode, which fails intermittently with a `rename … NotFound` error partway
 through — leaving a stale PDF behind that still measures as valid.
 
@@ -152,16 +152,62 @@ amd64 only, and not by preference: conda-forge publishes no `quarto` build for
 
 | What | Where |
 |------|-------|
-| Page cap | `PART_B1_PAGE_LIMIT` in `scripts/check_msca_compliance.py` — one constant; callers pass `--part-b1` |
-| Required sub-sections | the `required` list in `scripts/render_all.sh` |
+| Page cap | `PART_B1_PAGE_LIMIT` in `scripts/check/lib/rules.py` — one constant; callers pass `--part-b1` |
+| Required sub-sections | the `required` list in `scripts/build/render.sh` |
 | Margins, font size, citation style | `_quarto.yml` |
 | Font, footer text, Unicode mappings | `tex/msca-header.tex` |
-| Word styling | `scripts/make_reference_docx.py`, then `pixi run refdoc` |
+| Word styling | `scripts/word/make_reference.py`, then `pixi run refdoc` |
 
 Swap `nature.csl` for any style from [zotero.org/styles](https://www.zotero.org/styles).
 
 Re-check the formatting rules against the current call's application form before
 reusing this — they are reissued each year.
+
+## Repository conventions
+
+This layout is deliberate and portable. If you are starting a new repository,
+these are the rules worth copying.
+
+**One directory per task, not one directory per file type.** `scripts/` is grouped
+by *what the code does*, so finding the compliance gate means opening `check/`
+rather than scanning thirty filenames:
+
+```
+scripts/
+├── build/     render.sh, preview.sh          producing documents
+├── check/     run.sh, compliance.py, lib/    verifying them
+├── gantt/     make.py, vendor/               the chart
+├── word/      make_reference.py              Word styling
+└── hooks/     install.sh                     git integration
+```
+
+**One file per rule.** `check/lib/checks/` has a module per formatting rule —
+`margins.py`, `fonts.py`, `page_size.py`. Each is 30–140 lines, knows nothing
+about the others, and can be read in one sitting. They were split out of a
+single 1,166-line file; nothing about the behaviour changed, and every one of
+them is now findable by name.
+
+**A registry does the wiring.** `check/lib/checks/__init__.py` imports each rule
+and declares the order once. Adding a rule is a new file plus one line there —
+no other file changes. That is the pattern to reach for whenever a pipeline
+grows past three steps.
+
+**Separate the values from the logic.** Every threshold and pattern lives in
+`check/lib/rules.py`. Changing what compliance *means* is a one-file edit; the
+code that measures never moves.
+
+**Vendored code is quarantined and labelled.** `scripts/gantt/vendor/` holds
+third-party code copied in verbatim, with `PROVENANCE.md` recording where it
+came from and how to re-sync. Nothing else in the repo edits those files.
+
+**Say why, not what.** Comments here record the measurement or the failure that
+motivated a line — "a 1400 px canvas is 370 mm wide, and Quarto scaling it
+shrinks the labels below the 8 pt floor". A comment that restates the code
+rots; one that records a reason stays useful.
+
+**Make the guardrails executable.** Every rule this project cares about is
+checked by something that fails the build. Documentation describing a rule is a
+wish; a check enforcing it is a fact.
 
 ## Licence
 

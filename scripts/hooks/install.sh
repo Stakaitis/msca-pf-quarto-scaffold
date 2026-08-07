@@ -10,7 +10,7 @@ hook=$(git rev-parse --git-path hooks/pre-commit)
 mkdir -p "$(dirname "$hook")"
 
 # Never clobber someone else's hook without a copy.
-if [ -e "$hook" ] && ! grep -q check_msca_compliance "$hook" 2>/dev/null; then
+if [ -e "$hook" ] && ! grep -q 'check/compliance' "$hook" 2>/dev/null; then
     cp "$hook" "$hook.bak"
     echo "existing pre-commit hook backed up to $hook.bak"
 fi
@@ -23,7 +23,7 @@ set -eu
 
 # Locate the checker wherever the Quarto project sits, so this works whether it
 # is at the repo root or in a subdirectory such as work/.
-checker=$(git ls-files --full-name | grep -m1 'scripts/check_msca_compliance\.py$' || true)
+checker=$(git ls-files --full-name | grep -m1 'scripts/check/compliance\.py$' || true)
 
 # -z with a null-delimited read: staged paths can contain spaces, and git
 # C-quotes non-ASCII names unless told otherwise. Word-splitting a filename with
@@ -39,7 +39,7 @@ if [ -z "$checker" ] || [ ! -f "$checker" ]; then
     # `[ -f "$checker" ] || exit 0` disabled the whole gate the moment the path
     # changed, and said nothing.
     echo "pre-commit: PDFs are staged but the compliance checker was not found." >&2
-    echo "  Expected scripts/check_msca_compliance.py somewhere in this repo." >&2
+    echo "  Expected scripts/check/compliance.py somewhere in this repo." >&2
     echo "  Fix that, or bypass deliberately with 'git commit -n'." >&2
     exit 1
 fi
@@ -55,7 +55,7 @@ while IFS= read -r pdf; do
         *)            limit="--no-page-limit" ;;
     esac
     echo "pre-commit: checking $pdf"
-    ( cd "$root/$project_dir" && python3 scripts/check_msca_compliance.py \
+    ( cd "$root/$project_dir" && python3 scripts/check/compliance.py \
         "$root/$pdf" "$limit" ) || status=1
 done <<STAGED
 $staged

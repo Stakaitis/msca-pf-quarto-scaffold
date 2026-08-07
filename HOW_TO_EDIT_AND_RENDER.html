@@ -93,10 +93,10 @@
 <table>
   <tr><th>You get</th><th>How</th></tr>
   <tr><td>A4, 16&nbsp;mm margins, Times at 11&nbsp;pt, single spacing, page footer</td><td>Encoded once in <code>_quarto.yml</code> + <code>tex/msca-header.tex</code></td></tr>
-  <tr><td>A gate that measures the finished PDF</td><td><code>scripts/check_msca_compliance.py</code> — seven hard checks; the build <em>fails</em> on any of them</td></tr>
+  <tr><td>A gate that measures the finished PDF</td><td><code>scripts/check/compliance.py</code> — seven hard checks; the build <em>fails</em> on any of them</td></tr>
   <tr><td>Word output styled to match</td><td><code>tex/msca-reference.docx</code>, checked by the same gate</td></tr>
   <tr><td>Compact numbered citations</td><td><code>references.bib</code> + <code>nature.csl</code></td></tr>
-  <tr><td>Live preview while writing</td><td><code>scripts/preview.sh</code> — hot-reloading HTML</td></tr>
+  <tr><td>Live preview while writing</td><td><code>scripts/build/preview.sh</code> — hot-reloading HTML</td></tr>
   <tr><td>A reproducible toolchain</td><td><code>pixi.toml</code> + <code>pixi.lock</code>, or the Docker image</td></tr>
 </table>
 <p class="small">Where the rules come from: the official MSCA <strong>application form, "Instructions for Drafting Part B"</strong>. It is reissued each call — re-check it before reusing this scaffold for a new year. Two details worth knowing: the body font is <strong>TeX Gyre Termes</strong>, metric-compatible with Times New Roman and accepted under its other name <strong>Nimbus Roman No. 9 L</strong> (that is the answer if anyone asks why the form says "Times New Roman" and <code>pdffonts</code> says <code>TeXGyreTermes</code>); and captions, footers and figure labels may be smaller than the body but <strong>never below 8&nbsp;pt</strong>.</p>
@@ -199,7 +199,7 @@ The live preview is <strong>HTML</strong>. It shows wording, structure and flow 
 <div class="box warn"><div class="lbl lbl-c">Why a script instead of plain <code>quarto preview</code></div>
 Two Quarto behaviours:
 <ol style="margin:6px 0 0 0;padding-left:20px">
-<li><code>quarto preview</code> watches only the file you name. Files pulled in with <code>&lbrace;&lbrace;&lt; include &gt;&rbrace;&rbrace;</code> are <strong>not</strong> watched — so editing a section would leave the preview silently stale, showing old text with no error. <code>scripts/preview.sh</code> nudges the master file when a section changes.</li>
+<li><code>quarto preview</code> watches only the file you name. Files pulled in with <code>&lbrace;&lbrace;&lt; include &gt;&rbrace;&rbrace;</code> are <strong>not</strong> watched — so editing a section would leave the preview silently stale, showing old text with no error. <code>scripts/build/preview.sh</code> nudges the master file when a section changes.</li>
 <li><code>quarto preview</code> pointed at <strong>PDF</strong> renders once and then fails on every subsequent rebuild. The live loop therefore runs on HTML, which reloads cleanly.</li>
 </ol></div>
 
@@ -286,7 +286,7 @@ Only cite keys that exist in <code>references.bib</code>. A missing key renders 
 </table>
 <p class="small">Plus three warnings that do not fail the build: cover page / table of contents, reference-list page span, and PDF version.</p>
 <div class="box tip"><div class="lbl lbl-c">Why each document is rendered separately</div>
-<code>scripts/render_all.sh</code> renders one file at a time rather than using <code>quarto render</code> in project mode, which fails intermittently partway through with a <code>rename … NotFound</code> error — and leaves the previous PDF sitting in <code>_build/</code>, where it still measures as perfectly valid. That is why the freshness check exists as well.</div>
+<code>scripts/build/render.sh</code> renders one file at a time rather than using <code>quarto render</code> in project mode, which fails intermittently partway through with a <code>rename … NotFound</code> error — and leaves the previous PDF sitting in <code>_build/</code>, where it still measures as perfectly valid. That is why the freshness check exists as well.</div>
 
 <h2 id="pages"><span class="n">9</span>The page limit</h2>
 <div class="box danger"><div class="lbl lbl-c">Critical</div>
@@ -343,11 +343,11 @@ git checkout -- sections/_1.2_methodology.qmd</pre>
 <h2 id="adapt"><span class="n">15</span>Adapting to another call</h2>
 <table>
   <tr><th>What</th><th>Where</th></tr>
-  <tr><td>Page cap</td><td><code>PART_B1_PAGE_LIMIT</code> in <code>scripts/check_msca_compliance.py</code> — a single constant. Callers pass <code>--part-b1</code> and cannot pass a number, so the cap cannot drift between the build, the Makefile and the hook.</td></tr>
-  <tr><td>Which sub-sections are required</td><td>the <code>required</code> list in <code>scripts/render_all.sh</code></td></tr>
+  <tr><td>Page cap</td><td><code>PART_B1_PAGE_LIMIT</code> in <code>scripts/check/compliance.py</code> — a single constant. Callers pass <code>--part-b1</code> and cannot pass a number, so the cap cannot drift between the build, the Makefile and the hook.</td></tr>
+  <tr><td>Which sub-sections are required</td><td>the <code>required</code> list in <code>scripts/build/render.sh</code></td></tr>
   <tr><td>Margins, body size, citation style</td><td><code>_quarto.yml</code></td></tr>
   <tr><td>Font, footer text, Unicode mappings</td><td><code>tex/msca-header.tex</code></td></tr>
-  <tr><td>Word styling</td><td><code>scripts/make_reference_docx.py</code>, then <code>pixi run refdoc</code></td></tr>
+  <tr><td>Word styling</td><td><code>scripts/word/make_reference.py</code>, then <code>pixi run refdoc</code></td></tr>
 </table>
 <p>Swap <code>nature.csl</code> for any style from <a href="https://www.zotero.org/styles">zotero.org/styles</a>.</p>
 <div class="box danger"><div class="lbl lbl-c">Re-check the rules first</div>

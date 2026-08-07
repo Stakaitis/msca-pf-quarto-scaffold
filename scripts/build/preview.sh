@@ -17,7 +17,7 @@
 # constraint on Part B-1, so check it with `pixi run pdf` (renders the real PDF
 # and prints the page count) before you call any section done.
 #
-# Usage:  pixi run preview   |   make preview   |   sh scripts/preview.sh
+# Usage:  pixi run preview   |   make preview   |   sh scripts/build/preview.sh
 # Ctrl-C stops both the preview and the poller.
 
 cd "$(dirname "$0")/.." || exit 1

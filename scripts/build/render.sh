@@ -22,7 +22,7 @@
 # stale PDF left quietly in place -- which is the failure mode that nearly had
 # numbers reported from a render that never happened.
 #
-# Usage:  pixi run build   (calls this, then scripts/check_all.sh)
+# Usage:  pixi run build   (calls this, then scripts/check/run.sh)
 
 set -eu
 
@@ -42,7 +42,7 @@ docs=$(sed -n '/^  render:/,/^[a-z]/p' _quarto.yml \
        | sed -n 's/^ *- *//p' | grep '\.qmd$' || true)
 
 if [ -z "$docs" ]; then
-    echo "render_all.sh: no documents found under 'project: render:' in _quarto.yml" >&2
+    echo "render.sh: no documents found under 'project: render:' in _quarto.yml" >&2
     exit 2
 fi
 
@@ -65,7 +65,7 @@ for req in $required; do
     fi
 done
 if [ -n "$missing" ]; then
-    printf 'render_all.sh: scored sub-section(s) missing or empty:%b\n' "$missing" >&2
+    printf 'render.sh: scored sub-section(s) missing or empty:%b\n' "$missing" >&2
     echo "  Each is a question an evaluator scores. Restore it, or if the call" >&2
     echo "  genuinely dropped it, remove it from 'required' in this script." >&2
     exit 1
@@ -73,10 +73,10 @@ fi
 
 status=0
 for doc in $docs; do
-    [ -f "$doc" ] || { echo "render_all.sh: $doc is listed but missing" >&2; status=1; continue; }
+    [ -f "$doc" ] || { echo "render.sh: $doc is listed but missing" >&2; status=1; continue; }
     printf '\n=== rendering %s ===\n' "$doc"
     if ! quarto render "$doc"; then
-        echo "render_all.sh: FAILED to render $doc" >&2
+        echo "render.sh: FAILED to render $doc" >&2
         status=1
     fi
 done
@@ -86,7 +86,7 @@ done
 for doc in $docs; do
     out="_build/$(basename "$doc" .qmd).pdf"
     if [ ! -f "$out" ]; then
-        echo "render_all.sh: expected $out was not produced" >&2
+        echo "render.sh: expected $out was not produced" >&2
         status=1
     fi
 done
@@ -94,7 +94,7 @@ done
 # A PDF left in the source directory means the move step failed.
 leftover=$(ls ./*.pdf 2>/dev/null || true)
 if [ -n "$leftover" ]; then
-    echo "render_all.sh: PDFs left in the source directory: $leftover" >&2
+    echo "render.sh: PDFs left in the source directory: $leftover" >&2
     status=1
 fi
 

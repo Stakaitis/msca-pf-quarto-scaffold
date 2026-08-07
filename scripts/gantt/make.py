@@ -17,7 +17,7 @@ The compliance gate treats a non-Times face as a warning when it covers a small
 share of the document, and a failure when it covers the body.
 
     pixi run gantt              # writes figures/gantt.pdf from gantt.yaml
-    python scripts/make_gantt.py --check figures/gantt.pdf
+    python scripts/gantt/make.py --check figures/gantt.pdf
 """
 
 from __future__ import annotations
@@ -63,13 +63,13 @@ def generate(spec: Path, out_dir: Path, stem: str, title: str) -> Path:
         SystemExit: If the chart tool fails or writes no PDF.
     """
     here = Path(__file__).resolve().parent
-    tool = here / "gantt" / "gantt.py"
+    tool = here / "vendor" / "gantt.py"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # STATIC_WIDTH is a module constant, so set it by importing rather than
     # editing the vendored file (which would be lost on the next re-sync).
     driver = (
-        f"import sys; sys.path.insert(0, {str(here / 'gantt')!r});"
+        f"import sys; sys.path.insert(0, {str(here / 'vendor')!r});"
         # plotly picks orjson when it is installed, and orjson cannot serialise
         # a pandas Timestamp -- the chart tool passes dates through as
         # Timestamps, so the export dies with "Type is not JSON serializable".

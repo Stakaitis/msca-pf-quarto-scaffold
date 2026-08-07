@@ -21,7 +21,7 @@
 QUARTO ?= quarto
 PYTHON ?= python
 BUILD  := _build
-CHECK  := $(PYTHON) scripts/check_msca_compliance.py
+CHECK  := $(PYTHON) scripts/check/compliance.py
 
 .PHONY: setup build pdf b2 all preview check hooks clean
 
@@ -29,8 +29,8 @@ setup:
 	$(QUARTO) install tinytex --no-prompt --update-path
 
 build:
-	sh scripts/render_all.sh
-	PYTHON="$(PYTHON)" sh scripts/check_all.sh
+	sh scripts/build/render.sh
+	PYTHON="$(PYTHON)" sh scripts/check/run.sh
 
 pdf:
 	$(QUARTO) render partB1.qmd
@@ -43,13 +43,13 @@ b2:
 all: build
 
 preview:
-	sh scripts/preview.sh
+	sh scripts/build/preview.sh
 
 check:
-	PYTHON="$(PYTHON)" sh scripts/check_all.sh
+	PYTHON="$(PYTHON)" sh scripts/check/run.sh
 
 hooks:
-	sh scripts/install_hooks.sh
+	sh scripts/hooks/install.sh
 
 clean:
 	rm -rf $(BUILD) .quarto *_files *.tex *.pdf

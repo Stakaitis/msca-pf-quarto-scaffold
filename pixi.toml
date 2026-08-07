@@ -36,13 +36,13 @@ setup = "quarto install tinytex --no-prompt --update-path"
 # THE ENTRY POINT. Renders every part, then validates every rendered PDF
 # against the full MSCA formatting rule set. Non-zero exit on any hard failure,
 # so a non-compliant PDF cannot be produced without the build saying so.
-build = { cmd = "sh scripts/render_all.sh && sh scripts/check_all.sh" }
+build = { cmd = "sh scripts/build/render.sh && sh scripts/check/run.sh" }
 
 # Build Part B-1 alone and validate it (faster loop while writing Section 1-3).
-pdf = { cmd = "quarto render partB1.qmd && python scripts/check_msca_compliance.py _build/partB1.pdf --part-b1" }
+pdf = { cmd = "quarto render partB1.qmd && python scripts/check/compliance.py _build/partB1.pdf --part-b1" }
 
 # Build Part B-2 alone and validate it.
-b2 = { cmd = "quarto render partB2.qmd && python scripts/check_msca_compliance.py _build/partB2.pdf --no-page-limit" }
+b2 = { cmd = "quarto render partB2.qmd && python scripts/check/compliance.py _build/partB2.pdf --no-page-limit" }
 
 # Render both parts to editable Microsoft Word (.docx) for supervisor feedback.
 docx = "quarto render partB1.qmd --to docx && quarto render partB2.qmd --to docx"
@@ -52,7 +52,7 @@ all = { depends-on = ["build"] }
 
 # Live hot-reloading preview while you write (HTML — fast, reacts to edits in
 # sections/). Shows prose and flow, NOT pagination: use `pixi run pdf` for that.
-preview = "sh scripts/preview.sh"
+preview = "sh scripts/build/preview.sh"
 
 # Word file for a Grammarly / supervisor pass (Grammarly's Word add-in works;
 # Grammarly Desktop does not hook into VS Code).
@@ -60,18 +60,18 @@ proof = { cmd = "quarto render partB1.qmd --to docx && open _build/partB1.docx" 
 
 # Regenerate the Section 3 Gantt chart from gantt.yaml, at text-column width so
 # Quarto never scales it (scaling a vector figure shrinks its labels too).
-gantt = "python scripts/make_gantt.py"
+gantt = "python scripts/gantt/make.py"
 
 # Regenerate the Word reference document (A4/Times/11pt/footer) from pandoc's
 # default template. Only needed if the styling values change.
-refdoc = "python scripts/make_reference_docx.py"
+refdoc = "python scripts/word/make_reference.py"
 
 
 # Re-run the compliance check on the last build, without re-rendering.
-check = "sh scripts/check_all.sh"
+check = "sh scripts/check/run.sh"
 
 # Install the git pre-commit hook that blocks committing a non-compliant PDF.
-hooks = "sh scripts/install_hooks.sh"
+hooks = "sh scripts/hooks/install.sh"
 
 # Remove build artefacts.
 clean = "rm -rf _build .quarto *_files *.tex *.pdf"

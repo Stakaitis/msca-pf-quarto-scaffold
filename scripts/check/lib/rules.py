@@ -36,6 +36,17 @@ PART_B1_PAGE_LIMIT = 10
 # which is exactly what an evaluator measuring in Acrobat would fail us on.
 SIZE_TOLERANCE_PT = 0.02
 
+# "A minimum of single line spacing" (application form). No single number
+# defines it: LaTeX sets 1.20x at 11pt, this project's header 1.24x, Word's
+# single for Times New Roman is ~1.15x. 1.10 sits below all of them and well
+# above the ~1.0 that deliberate compression produces, so it fails tampering
+# without failing a legitimately typeset document. A floor, not a target.
+MIN_LINE_SPACING_RATIO = 1.10
+
+# Part A of the portal form caps the proposal summary at 2000 characters.
+# Not a Part B rule, but it is the one limit with no warning until submission.
+ABSTRACT_MAX_CHARS = 2000
+
 FOOTER_RE = re.compile(r"Part B - Page (\d+) of (\d+)")
 
 # Times New Roman and its metric-compatible free equivalents.

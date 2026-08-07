@@ -1,0 +1,40 @@
+<!-- =====================================================================
+     PROPOSAL SUMMARY / ABSTRACT — max 2000 characters.
+
+     THIS IS NOT PART OF PART B. It goes in **Part A**, the online form in the
+     Funding & Tenders Portal. The Part B application form does not mention it,
+     which is exactly why it gets forgotten until submission day.
+
+     It is rendered here anyway, as its own PDF, for two reasons:
+
+       1. The 2000-character cap is the only limit in the whole application
+          with no local warning. The portal enforces it when you paste, at the
+          worst possible moment. `pixi run build` now fails if this file is
+          over, and tells you how many characters to cut.
+       2. Keeping it out of partB1.qmd means it does not spend ~half a page of
+          the 10-page budget.
+
+     Do NOT {{< include >}} this into partB1.qmd unless your call's template
+     explicitly puts a summary inside Part B-1. Check the current application
+     form first.
+
+     Write it last. It is the only part of the proposal an evaluator is
+     guaranteed to read, and it is easier once the objectives are settled.
+     ===================================================================== -->
+
+# Abstract
+
+[One or two sentences: the field, and the specific gap. State the problem
+before naming your solution — an evaluator who does not yet know why it matters
+will not care how you solve it.]
+
+[The aim, and the objectives that deliver it. Name the approach concretely
+enough to be judged: what you will measure, in what system, with what method.]
+
+[What changes if it works — for the field first, then more widely. Keep the
+claims inside what the work can actually support; overclaiming is penalised
+more reliably than ambition is rewarded.]
+
+<!-- Character count is checked on the rendered PDF, excluding this heading and
+     the page footer, so it matches what you paste into the portal. Run
+     `pixi run build` and read the "Summary character count" line. -->

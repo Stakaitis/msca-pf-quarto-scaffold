@@ -19,7 +19,9 @@ from ..extract import iter_spans
 from ..model import CheckResult, FAIL
 from .advisory import warn_cover_and_toc, warn_pdf_version, warn_reference_span
 from .font_sizes import check_font_sizes
+from .char_count import check_char_count
 from .fonts import check_fonts
+from .line_spacing import check_char_spacing, check_line_spacing
 from .footer import check_footer
 from .freshness import check_freshness
 from .margins import check_margins
@@ -31,12 +33,14 @@ from .word import check_docx
 __all__ = ["run_checks", "check_docx"]
 
 
-def run_checks(pdf_path: Path, max_pages: int | None) -> list[CheckResult]:
+def run_checks(pdf_path: Path, max_pages: int | None,
+               max_chars: int | None = None) -> list[CheckResult]:
     """Run every compliance check against one PDF.
 
     Args:
         pdf_path: Path to the rendered PDF.
         max_pages: Page limit, or None when the document has no limit.
+        max_chars: Portal character cap, or None when it does not apply.
 
     Returns:
         All check results, hard checks first.
@@ -70,6 +74,8 @@ def run_checks(pdf_path: Path, max_pages: int | None) -> list[CheckResult]:
             check_page_size(doc),
             check_fonts(doc, spans),
             check_font_sizes(spans, doc.page_count),
+            check_line_spacing(doc),
+            check_char_spacing(doc),
             check_margins(doc),
             check_footer(doc),
             check_page_count(doc, max_pages),
@@ -77,4 +83,8 @@ def run_checks(pdf_path: Path, max_pages: int | None) -> list[CheckResult]:
             warn_cover_and_toc(doc),
             warn_reference_span(doc),
             warn_pdf_version(pdf_path, doc),
-        ]
+        ] + (
+            # Only for the summary. Listing a no-op 'does not apply' line on
+            # every other document trains people to skim the report.
+            [check_char_count(doc, max_chars)] if max_chars is not None else []
+        )

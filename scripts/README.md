@@ -22,6 +22,7 @@ in one place instead of reconstructed from five.
     _3.2_host.qmd        ┘        partB2.qmd ─┤
                                               │                    │
   partB2.qmd ─────────────────────────────────┤                    │
+  abstract.qmd ───────────────────────────────┤  (Part A, ≤2000 ch) │
   references.bib ─────────────────────────────┤                    ▼
   figures/gantt.pdf ──────────────────────────┤              exit 0 or 1
                                               │
@@ -67,10 +68,12 @@ should ever be kept there — `pixi run clean` deletes the directory whole.
 |---|---|---|
 | `_build/partB1.pdf` | `--part-b1` | **10 pages, hard** |
 | `_build/partB2.pdf` | `--no-page-limit` | none |
+| `_build/abstract.pdf` | `--summary` | none — but capped at **2000 characters** (Part A portal field, not Part B) |
 | `_build/*.docx` | `--no-page-limit` | none — Word paginates differently; the PDF is the authority |
 | any other `_build/*.pdf` | `--no-page-limit` | none — picked up automatically, so a new document cannot go unchecked |
 
-Eight hard checks per PDF, seven per Word file. Any failure exits non-zero, and
+Ten hard checks per PDF, seven per Word file (Word skips the page limit and
+the two spacing checks). Any failure exits non-zero, and
 `run.sh` returns the worst status across every file rather than stopping at the
 first.
 

@@ -78,8 +78,8 @@ Everything else is machinery: `_quarto.yml`, `tex/`, `nature.csl`, `scripts/`.
 
 ## What the build measures
 
-**Eight** hard checks on every rendered PDF, and the same rules on every Word file bar
-the page limit — seven there, because Word paginates differently and the PDF stays the
+**Ten** hard checks on every rendered PDF, and the same rules on every Word file bar
+the page limit and the two spacing checks — seven there, because Word paginates differently and the PDF stays the
 authority on length. Any failure exits non-zero:
 
 | Check | Rule |
@@ -88,6 +88,8 @@ authority on length. Any failure exits non-zero:
 | Page size | A4, every page |
 | Fonts | Times family for body text, all embedded; Latin Modern rejected outright |
 | Font size | body ≥ 11 pt; captions, footers and figure labels ≥ 8 pt |
+| Line spacing | ≥ single — median leading ≥ 1.10× the font size |
+| Character spacing | standard — no `Tz` horizontal scaling, no negative `Tc` tracking |
 | Margins | ≥ 15 mm all four sides, measured from the content, images and vector ink included |
 | Footer | `Part B - Page X of Y` on every page, with a correct total |
 | Page limit | Part B-1 ≤ 10 pages |
@@ -106,6 +108,7 @@ included).
 |---|---|---|
 | `_build/partB1.pdf` | **10 pages, hard** | `--part-b1` |
 | `_build/partB2.pdf` | none | `--no-page-limit` |
+| `_build/abstract.pdf` | none | `--summary` — enforces the 2000-character Part A cap |
 | `_build/partB1.docx`, `_build/partB2.docx` | none | `--no-page-limit` |
 | any other `_build/*.pdf` | none | picked up automatically, so a new document cannot go unchecked |
 

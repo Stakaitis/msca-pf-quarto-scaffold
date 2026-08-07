@@ -36,9 +36,16 @@ $CHECK _build/partB2.pdf --no-page-limit || status=1
 # sections, and it is the file that regressed on 2026-07-28 — so it is checked.
 # Any other PDF the project renders (e.g. a supervisor-review extract) is checked
 # too, minus the page cap. Keeps this script working in any project layout.
+# The Part A summary. Not part of Part B at all -- it is pasted into the portal
+# form -- but it is the one limit with no warning until submission, so it is
+# rendered and checked here like everything else.
+if [ -f _build/abstract.pdf ]; then
+    $CHECK _build/abstract.pdf --no-page-limit --summary || status=1
+fi
+
 for extra in _build/*.pdf; do
     case "$extra" in
-        _build/partB1.pdf|_build/partB2.pdf|"_build/*.pdf") continue ;;
+        _build/partB1.pdf|_build/partB2.pdf|_build/abstract.pdf|"_build/*.pdf") continue ;;
     esac
     $CHECK "$extra" --no-page-limit || status=1
 done

@@ -118,10 +118,75 @@ def test_body_text_below_11pt_fails(tmp):
     assert _result(_write(tmp, "ok.pdf"), "font size").status == PASS
 
 
+def test_compressed_leading_fails(tmp):
+    # The obvious way to win back a page once the font size is pinned at 11 pt.
+    # 10 pt of leading on 11 pt type is 0.91x -- below single by any convention.
+    doc = fitz.open()
+    page = doc.new_page(width=A4[0], height=A4[1])
+    for i in range(30):
+        page.insert_text((MARGIN_PT, MARGIN_PT + 20 + i * 10.0),
+                         "Neutrophils respond to Candida within minutes of contact.",
+                         fontname="tiro", fontsize=BODY_PT)
+    page.insert_text((MARGIN_PT, A4[1] - MARGIN_PT), "Part B - Page 1 of 1",
+                     fontname="tiro", fontsize=9)
+    out = tmp / "tight.pdf"; doc.save(out); doc.close()
+    assert _result(out, "line spacing").status == FAIL
+    # and normal leading still passes
+    doc = fitz.open()
+    page = doc.new_page(width=A4[0], height=A4[1])
+    for i in range(30):
+        page.insert_text((MARGIN_PT, MARGIN_PT + 20 + i * 13.6),
+                         "Neutrophils respond to Candida within minutes of contact.",
+                         fontname="tiro", fontsize=BODY_PT)
+    page.insert_text((MARGIN_PT, A4[1] - MARGIN_PT), "Part B - Page 1 of 1",
+                     fontname="tiro", fontsize=9)
+    ok = tmp / "normal.pdf"; doc.save(ok); doc.close()
+    assert _result(ok, "line spacing").status == PASS
+
+
+def test_horizontally_condensed_text_fails(tmp):
+    # Tz scales text horizontally. PyMuPDF has no API for it, so the operator is
+    # injected into the page content stream directly -- which is exactly how a
+    # tampered document would carry it.
+    pdf = _write(tmp, "wide.pdf")
+    doc = fitz.open(pdf)
+    xref = doc[0].get_contents()[0]
+    doc.update_stream(xref, b"90 Tz\n" + doc.xref_stream(xref))
+    squeezed = tmp / "condensed.pdf"
+    doc.save(squeezed); doc.close()
+    assert _result(squeezed, "character spacing").status == FAIL
+    assert _result(pdf, "character spacing").status == PASS
+
+
 def test_placeholder_left_in_text_fails(tmp):
     left = _write(tmp, "placeholder.pdf", body="We will [verb] the [what, in WP1].")
     assert _result(left, "placeholder").status == FAIL
     assert _result(_write(tmp, "clean.pdf"), "placeholder").status == PASS
+
+
+def test_summary_over_the_character_cap_fails(tmp):
+    # The portal enforces 2000 characters at paste time. This is the only limit
+    # in the application with no local warning, so the gate has to be the warning.
+    # insert_text does not wrap -- a single long string runs off the page and is
+    # clipped, so the text must be laid out as real lines to reach 2000+ chars.
+    doc = fitz.open()
+    page = doc.new_page(width=A4[0], height=A4[1])
+    line = "Neutrophils respond to Candida albicans within minutes of contact."  # 66
+    for i in range(40):                                    # ~2700 characters
+        page.insert_text((MARGIN_PT, MARGIN_PT + 20 + i * 13.6), line,
+                         fontname="tiro", fontsize=BODY_PT)
+    page.insert_text((MARGIN_PT, A4[1] - MARGIN_PT), "Part B - Page 1 of 1",
+                     fontname="tiro", fontsize=9)
+    long = tmp / "long.pdf"; doc.save(long); doc.close()
+    r = [x for x in run_checks(long, None, 2000) if "character count" in x.name.lower()]
+    assert len(r) == 1 and r[0].status == FAIL, r
+    short = _write(tmp, "short.pdf", body="A brief summary of the project.")
+    r = [x for x in run_checks(short, None, 2000) if "character count" in x.name.lower()]
+    assert len(r) == 1 and r[0].status == PASS, r
+    # without a cap the check must not appear at all -- a no-op "does not apply"
+    # line on every document trains people to skim the report
+    r = [x for x in run_checks(long, None) if "character count" in x.name.lower()]
+    assert r == [], r
 
 
 def test_footer_total_must_match_reality(tmp):

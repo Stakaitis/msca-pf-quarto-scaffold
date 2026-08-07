@@ -43,7 +43,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib.checks import run_checks
 from lib.model import FAIL, PASS, WARN, CheckResult, Span
 from lib.rules import (BANNED_RE, CAPTION_RE, FOOTER_RE, MATH_COMPANION_RE,
-                       PART_B1_PAGE_LIMIT, PT_PER_MM, REF_MARKER_RE,
+                       ABSTRACT_MAX_CHARS, PART_B1_PAGE_LIMIT, PT_PER_MM, REF_MARKER_RE,
                        TIMES_RE)
 
 
@@ -93,6 +93,20 @@ def main(argv: Sequence[str] | None = None) -> int:
         action="store_true",
         help="document has no page limit (Part B-2)",
     )
+    # Separate from the page-limit group: a character cap is orthogonal to
+    # pagination, and only the summary document uses it.
+    parser.add_argument(
+        "--summary",
+        action="store_true",
+        help=f"this is the Part A summary: also enforce the {ABSTRACT_MAX_CHARS}-character cap",
+    )
+    parser.add_argument(
+        "--max-chars",
+        type=int,
+        default=None,
+        help="an explicit character cap, overriding --summary",
+    )
+
     args = parser.parse_args(argv)
 
     if args.part_b1:
@@ -107,7 +121,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     # gets a raw traceback, which reads as "the checker is broken" rather than
     # "the file you pointed me at is".
     try:
-        results = run_checks(args.pdf, max_pages)
+        max_chars = args.max_chars
+        if max_chars is None and args.summary:
+            max_chars = ABSTRACT_MAX_CHARS
+        results = run_checks(args.pdf, max_pages, max_chars)
     except FileNotFoundError as exc:
         print(f"CANNOT CHECK: {exc}", file=sys.stderr)
         return 2

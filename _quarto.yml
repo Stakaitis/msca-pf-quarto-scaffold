@@ -12,6 +12,7 @@ project:
   render:
     - partB1.qmd
     - partB2.qmd
+    - abstract.qmd
 
 format:
   pdf:

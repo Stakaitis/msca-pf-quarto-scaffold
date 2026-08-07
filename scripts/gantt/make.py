@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate the Section 3 Gantt chart at MSCA-legal size.
 
-Drives the vendored ``scripts/gantt/gantt.py`` with the settings this proposal
+Drives the vendored ``scripts/gantt/vendor/gantt.py`` with the settings this proposal
 needs, and verifies the result against the two rules a figure can break.
 
 WHY A WRAPPER: the chart tool defaults to a 1400 px canvas, which is 370 mm

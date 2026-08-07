@@ -1,7 +1,9 @@
 # Vendored from lab-tools
 
-`gantt.py` and `lib_plot_themes.py` are copied verbatim from
+`vendor/gantt.py` and `vendor/lib_plot_themes.py` are copied verbatim from
 `General_tools/gantt/` and `General_tools/` in the lab-tools repository.
+They sit in `vendor/` so it is obvious at a glance which files are ours and
+which are upstream's.
 
 Vendored rather than referenced so this proposal builds on any machine and
 inside the Docker image, with no dependency on a sibling checkout.
@@ -10,7 +12,7 @@ To re-sync after upstream changes:
 
     cp ~/Scripts/General_tools/gantt/gantt.py \
        ~/Scripts/General_tools/lib_plot_themes.py \
-       work/scripts/gantt/
+       scripts/gantt/vendor/
 
 Do not edit these two files here — MSCA-specific settings live in
 `scripts/gantt/make.py`, which drives them. Editing in place makes the next

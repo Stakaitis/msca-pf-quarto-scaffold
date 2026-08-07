@@ -26,7 +26,12 @@
 
 set -eu
 
-cd "$(dirname "$0")/.." || exit 2
+# Run from the project root, wherever this script sits under scripts/. Walk up
+# looking for _quarto.yml rather than counting "../..", so moving this file
+# between subdirectories cannot silently aim the build at the wrong directory.
+root=$(cd "$(dirname "$0")" && while [ ! -f _quarto.yml ] && [ "$PWD" != / ]; do cd ..; done; pwd)
+[ -f "$root/_quarto.yml" ] || { echo "$(basename "$0"): no _quarto.yml above $0" >&2; exit 2; }
+cd "$root" || exit 2
 
 # Quarto's project cache: regenerated on every render, only ever a liability.
 rm -rf .quarto

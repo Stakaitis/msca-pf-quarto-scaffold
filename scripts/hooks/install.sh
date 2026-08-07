@@ -44,7 +44,8 @@ if [ -z "$checker" ] || [ ! -f "$checker" ]; then
     exit 1
 fi
 
-project_dir=$(dirname "$(dirname "$checker")")
+# scripts/check/compliance.py -> up three, to the directory holding _quarto.yml.
+project_dir=$(dirname "$(dirname "$(dirname "$checker")")")
 root=$(git rev-parse --show-toplevel)
 
 status=0

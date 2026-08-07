@@ -20,7 +20,12 @@
 # Usage:  pixi run preview   |   make preview   |   sh scripts/build/preview.sh
 # Ctrl-C stops both the preview and the poller.
 
-cd "$(dirname "$0")/.." || exit 1
+# Run from the project root, wherever this script sits under scripts/. Walk up
+# looking for _quarto.yml rather than counting "../..", so moving this file
+# between subdirectories cannot silently aim the build at the wrong directory.
+root=$(cd "$(dirname "$0")" && while [ ! -f _quarto.yml ] && [ "$PWD" != / ]; do cd ..; done; pwd)
+[ -f "$root/_quarto.yml" ] || { echo "$(basename "$0"): no _quarto.yml above $0" >&2; exit 2; }
+cd "$root" || exit 2
 TARGET=${1:-partB1.qmd}
 
 # ponytail: polling loop rather than an fswatch/entr dependency — a 2 s lag is

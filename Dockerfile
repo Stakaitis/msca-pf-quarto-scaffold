@@ -71,7 +71,11 @@ RUN tlmgr install \
 # Prove the LaTeX stack works at build time rather than discovering a missing
 # package on the user's first render. Uses the real header, then discards output.
 COPY tex/ ./tex/
-RUN printf 'project:\n  output-dir: _probe\nformat:\n  pdf:\n    pdf-engine: pdflatex\n    include-in-header: tex/msca-header.tex\n' > _quarto.yml \
+# The probe's _quarto.yml mirrors the real one's geometry block on purpose.
+# Without it Quarto never loads the geometry package, \geometry{heightrounded}
+# in the header is undefined, and the probe fails on a document the real
+# build renders fine -- a false alarm that costs a full image rebuild to read.
+RUN printf 'project:\n  output-dir: _probe\nformat:\n  pdf:\n    pdf-engine: pdflatex\n    include-in-header: tex/msca-header.tex\n    geometry: [a4paper, top=16mm, bottom=16mm, left=16mm, right=16mm]\n' > _quarto.yml \
  && printf -- '---\ntitle: probe\n---\n\nBuild probe: %s %s %s alpha beta gamma.\n' '>=' 'x' 'degree' > probe.qmd \
  && pixi run quarto render probe.qmd --to pdf \
  && test -f _probe/probe.pdf \
@@ -99,4 +103,6 @@ ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 # then validate every PDF against the full MSCA formatting rule set (A4, Times,
 # 11 pt, 15 mm, footer, page cap, placeholders). Non-zero exit on any failure.
 # Override with any command, e.g. `quarto render partB2.qmd`.
-CMD ["sh", "-c", "quarto render && sh scripts/check/run.sh"]
+# Uses render.sh, not a bare `quarto render`: project mode fails intermittently
+# partway through and leaves a stale PDF that still measures as valid.
+CMD ["sh", "-c", "sh scripts/build/render.sh && sh scripts/check/run.sh"]

@@ -7,7 +7,12 @@
 
 ### Scientific impact
 
-<!-- What changes in your field if this works. Who builds on it, and how soon. -->
+<!-- What changes in your field if this works. Who builds on it, and how soon.
+     The form requires CREDIBLE QUANTIFIED ESTIMATES here (added in form
+     version 3.1). 'Magnitude' means how widespread the effect is likely to
+     be -- size of the target group, or the proportion of it reached. Give a
+     number with the basis for it; an unsourced number is worse than a
+     careful qualitative bound. -->
 
 [...]
 

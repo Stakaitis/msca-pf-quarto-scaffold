@@ -21,3 +21,16 @@
 ### Two-way transfer of knowledge
 
 [...]
+
+### Secondment and non-academic placement
+
+<!-- The form asks for the "rationale and added-value of the non-academic
+     placement (if applicable) and secondment (if applicable)". If neither
+     applies, SAY SO in one line rather than omitting the heading -- an
+     evaluator looking for it and finding nothing cannot tell a deliberate
+     'not applicable' from an oversight. If one does apply, give the reason
+     it exists and what it adds, not just where and when. -->
+
+[Not applicable — no secondment or non-academic placement is planned. OR: state
+the host, the duration, and what the placement adds that the fellowship cannot
+provide otherwise.]

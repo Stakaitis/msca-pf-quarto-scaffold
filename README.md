@@ -45,7 +45,8 @@ in a browser.**
 Straight after cloning, `pixi run build` **fails**, and that is correct:
 
 ```
-[FAIL] No unresolved placeholders   17 found -- '[Verb] [what, in WP1]' ...
+[FAIL] No unresolved placeholders   (hard)
+       10 found -- p1: '[acronym] 1. Excellence 1.1 Quality and pertinence of' | p2: '[title] M1-M[x] ...
 ```
 
 Every `[...]` in the skeletons is a prompt to be replaced. The build refuses to call a

@@ -25,12 +25,19 @@
 # Build (from the folder holding pixi.toml):
 #   docker build --platform linux/amd64 -t msca:latest .
 #
-# Render the proposal (mount your project, outputs land in _build/):
-#   docker run --rm --platform linux/amd64 -v "$PWD:/work" msca:latest pixi run build
+# Render the proposal (mount your project, outputs land in _build/). No command
+# needed -- the default CMD renders every part and validates every output:
+#   docker run --rm --platform linux/amd64 -v "$PWD:/work" msca:latest
+#
+# Do NOT prefix commands with `pixi run` in here. The folder you mount carries its
+# own .pixi/ built for the host OS, and pixi would try to use it:
+#   Error: the installed environment 'default' cannot run on platform 'linux-64'
+#          ... require virtual packages this platform does not provide: [__osx=12.3]
+# quarto and python are already on PATH (see CONDA_PREFIX below), so call them directly.
 #
 # Live preview on http://localhost:4200 :
 #   docker run --rm --platform linux/amd64 -p 4200:4200 -v "$PWD:/work" msca:latest \
-#     pixi run quarto preview partB1.qmd --to html --port 4200 --host 0.0.0.0
+#     quarto preview partB1.qmd --to html --port 4200 --host 0.0.0.0
 #
 # Shell inside, to poke around:
 #   docker run --rm -it --platform linux/amd64 -v "$PWD:/work" --entrypoint bash msca:latest

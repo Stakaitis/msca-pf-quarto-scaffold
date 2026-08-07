@@ -77,11 +77,13 @@ Everything else is machinery: `_quarto.yml`, `tex/`, `nature.csl`, `scripts/`.
 
 ## What the build measures
 
-Seven hard checks, on every rendered PDF **and** every Word file. Any failure exits
-non-zero:
+**Eight** hard checks on every rendered PDF, and the same rules on every Word file bar
+the page limit — seven there, because Word paginates differently and the PDF stays the
+authority on length. Any failure exits non-zero:
 
 | Check | Rule |
 |-------|------|
+| Output is current | the file is newer than every source, so a render that failed cannot pass as one that worked |
 | Page size | A4, every page |
 | Fonts | Times family for body text, all embedded; Latin Modern rejected outright |
 | Font size | body ≥ 11 pt; captions, footers and figure labels ≥ 8 pt |
@@ -90,9 +92,8 @@ non-zero:
 | Page limit | Part B-1 ≤ 10 pages |
 | Placeholders | no `[...]`, `TODO cite` or stray `**` left in the text |
 
-Plus three warnings: cover page / table of contents, reference-list page span, and PDF
-version. And a freshness check — a PDF older than its sources fails, so a build that
-did not happen can never be reported as one that did.
+Plus three warnings, which do not fail the build: cover page / table of contents,
+reference-list page span, and PDF version.
 
 ## Word output
 

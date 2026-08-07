@@ -5,6 +5,12 @@
     // Offline grammar/style checker that understands Markdown + LaTeX, so it
     // ignores [@citekeys] and \commands. Closest in-editor stand-in for
     // Grammarly, which cannot attach to VS Code.
-    "ltex-plus.vscode-ltex-plus"
+    "ltex-plus.vscode-ltex-plus",
+    // Opens a PDF in a VS Code tab, side by side with the .qmd you are editing,
+    // and refreshes it whenever the file on disk changes. This is what makes
+    // "Cmd+Shift+B, look right" work without leaving the editor. Quarto's own
+    // preview cannot do PDF: pointed at PDF it renders once, then fails on
+    // every rebuild after the first.
+    "tomoki1207.pdf"
   ]
 }

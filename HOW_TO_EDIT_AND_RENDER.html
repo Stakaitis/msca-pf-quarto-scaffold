@@ -63,7 +63,7 @@
 <header>
   <h1>Quarto proposal scaffold — set up, write, render</h1>
   <p class="sub">Everything needed to reproduce this writing setup on a clean laptop, and to reuse it for a new proposal.</p>
-  <p class="meta">Toolchain: VS&nbsp;Code + Quarto + TinyTeX, managed by Pixi · optional Docker image for frozen, offline builds · last verified 5 August 2026</p>
+  <p class="meta">Toolchain: VS&nbsp;Code + Quarto + TinyTeX, managed by Pixi · optional Docker image for frozen, offline builds · last verified 7 August 2026</p>
 </header>
 
 <nav>
@@ -111,9 +111,10 @@ A ~3.5&nbsp;GB image with the whole LaTeX distribution baked in. Renders identic
 <h2 id="setup"><span class="n">2</span>Set up a clean laptop (Route A)</h2>
 <p>Roughly 20 minutes, most of it waiting on downloads. macOS shown; Linux is identical, Windows works the same via PowerShell.</p>
 
-<div class="step"><div class="num">1</div><div class="body"><strong>Install VS Code</strong> — <a href="https://code.visualstudio.com/">code.visualstudio.com</a>. Then the two extensions this scaffold expects; VS Code offers them automatically, because they are listed in <code>.vscode/extensions.json</code>.
+<div class="step"><div class="num">1</div><div class="body"><strong>Install VS Code</strong> — <a href="https://code.visualstudio.com/">code.visualstudio.com</a>. Then the three extensions this scaffold expects; VS Code offers them automatically, because they are listed in <code>.vscode/extensions.json</code>.
 <pre>code --install-extension quarto.quarto
-code --install-extension ltex-plus.vscode-ltex-plus</pre></div></div>
+code --install-extension ltex-plus.vscode-ltex-plus
+code --install-extension tomoki1207.pdf</pre></div></div>
 
 <div class="step"><div class="num">2</div><div class="body"><strong>Install Pixi</strong>, which manages every other tool.
 <pre>curl -fsSL https://pixi.sh/install.sh | bash</pre>
@@ -213,7 +214,7 @@ Two Quarto behaviours:
   <tr><td><code>partB2.qmd</code></td><td>CV, host capacity, ethics, security screening, Green Charter, AI declaration. No page limit.</td></tr>
   <tr><td><code>references.bib</code></td><td>Bibliography — cite with <code>[@key]</code></td></tr>
   <tr><td><code>partB1.qmd</code></td><td>Stitches the nine sections in order. Build configuration, not content.</td></tr>
-  <tr><td><code>gantt.yaml</code>, <code>figures/</code></td><td>Optional Gantt chart — see <a href="#gantt">§10</a></td></tr>
+  <tr><td><code>gantt.yaml</code>, <code>figures/</code></td><td>Optional Gantt chart — see <a href="#gantt">§11</a></td></tr>
   <tr><td><code>_build/</code></td><td>All rendered output. Generated — never edit, never store anything here.</td></tr>
 </table>
 <div class="box tip"><div class="lbl lbl-c">One file, one evaluator question</div>
@@ -272,7 +273,7 @@ Only cite keys that exist in <code>references.bib</code>. A missing key renders 
 </table>
 <p class="small">Prefer <code>make</code>? <code>make build</code>, <code>make pdf</code>, <code>make b2</code>, <code>make preview</code>, <code>make check</code> and <code>make clean</code> all exist. <strong>They do not go through Pixi</strong> — the Makefile calls <code>quarto</code> and <code>python</code> straight off your <code>PATH</code>, so that route needs Quarto, a TeX engine, poppler and PyMuPDF already installed.</p>
 <h3>What the gate measures</h3>
-<p>Seven hard checks, on every rendered PDF and every Word file. Any failure exits non-zero.</p>
+<p><strong>Eight</strong> hard checks on every rendered PDF, and the same rules on every Word file bar the page limit &mdash; seven there, because Word paginates differently and the PDF stays the authority on length. Any failure exits non-zero.</p>
 <table>
   <tr><th>Check</th><th>Rule</th></tr>
   <tr><td>Output is current</td><td>the file is newer than every source — a render that failed cannot be reported as one that worked</td></tr>
@@ -343,7 +344,7 @@ git checkout -- sections/_1.2_methodology.qmd</pre>
 <h2 id="adapt"><span class="n">15</span>Adapting to another call</h2>
 <table>
   <tr><th>What</th><th>Where</th></tr>
-  <tr><td>Page cap</td><td><code>PART_B1_PAGE_LIMIT</code> in <code>scripts/check/compliance.py</code> — a single constant. Callers pass <code>--part-b1</code> and cannot pass a number, so the cap cannot drift between the build, the Makefile and the hook.</td></tr>
+  <tr><td>Page cap</td><td><code>PART_B1_PAGE_LIMIT</code> in <code>scripts/check/lib/rules.py</code> — a single constant. Callers pass <code>--part-b1</code> and cannot pass a number, so the cap cannot drift between the build, the Makefile and the hook.</td></tr>
   <tr><td>Which sub-sections are required</td><td>the <code>required</code> list in <code>scripts/build/render.sh</code></td></tr>
   <tr><td>Margins, body size, citation style</td><td><code>_quarto.yml</code></td></tr>
   <tr><td>Font, footer text, Unicode mappings</td><td><code>tex/msca-header.tex</code></td></tr>
@@ -357,6 +358,7 @@ The formatting instructions are reissued with each call. Read the current applic
 <table>
   <tr><th>Symptom</th><th>Fix</th></tr>
   <tr><td><code>pixi: command not found</code></td><td>Open a new Terminal so the shell reloads its <code>PATH</code>.</td></tr>
+  <tr><td><code>lock file not up-to-date with the workspace</code></td><td><code>pixi.toml</code> gained a dependency that <code>pixi.lock</code> does not have. Run <code>pixi lock</code>, then commit the updated lock &mdash; otherwise a fresh clone cannot install and the Docker image cannot build.</td></tr>
   <tr><td><code>could not find pixi.toml</code></td><td>Wrong folder. <code>cd</code> into the one containing <code>pixi.toml</code>.</td></tr>
   <tr><td>Build stops with "scored sub-section missing or empty"</td><td>One of the nine <code>sections/</code> files was deleted or emptied. Restore it — each is a scored question.</td></tr>
   <tr><td>Preview does not update when you save a section</td><td>You are running plain <code>quarto preview</code>. Use <code>pixi run preview</code> — see <a href="#loop">§4</a>.</td></tr>

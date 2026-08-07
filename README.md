@@ -110,6 +110,7 @@ the PDF remains the authority for the 10-page limit.
 | Command | What it does |
 |---------|--------------|
 | `pixi run build` | **The entry point.** Renders every part, validates every output. |
+| `pixi run all` | Alias for `build` — older muscle memory still lands on the checked build |
 | `pixi run preview` | Live hot-reloading HTML on `localhost:4200` |
 | `pixi run pdf` | Part B-1 alone + its checks — a faster loop while writing |
 | `pixi run b2` | Part B-2 alone + its checks |
@@ -117,7 +118,8 @@ the PDF remains the authority for the 10-page limit.
 | `pixi run gantt` | Render `gantt.yaml` to `figures/gantt.pdf` at text-column width |
 | `pixi run refdoc` | Regenerate the Word reference document |
 | `pixi run hooks` | Install a pre-commit hook that blocks committing a failing PDF |
-| `pixi run docx` / `proof` | Word output (`proof` opens it; macOS only) |
+| `pixi run docx` | Both parts to Word, without rendering the PDFs |
+| `pixi run proof` | Part B-1 to Word and opens it, for a Grammarly pass (macOS only) |
 | `pixi run clean` | Delete build artefacts |
 
 ## Live preview — two Quarto behaviours this works around

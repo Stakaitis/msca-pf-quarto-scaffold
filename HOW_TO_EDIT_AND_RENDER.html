@@ -262,12 +262,15 @@ Only cite keys that exist in <code>references.bib</code>. A missing key renders 
 <table>
   <tr><th>Command</th><th>What it does</th></tr>
   <tr><td><code>pixi run build</code></td><td><strong>The entry point.</strong> Renders every part, then validates every PDF and Word file.</td></tr>
+  <tr><td><code>pixi run all</code></td><td>An alias for <code>build</code>, kept so older muscle memory still lands on the checked build rather than a bare render.</td></tr>
   <tr><td><code>pixi run preview</code></td><td>Live hot-reloading HTML on <code>localhost:4200</code></td></tr>
   <tr><td><code>pixi run pdf</code></td><td>Part B-1 alone + its checks — a faster loop while writing</td></tr>
   <tr><td><code>pixi run b2</code></td><td>Part B-2 alone + its checks</td></tr>
   <tr><td><code>pixi run check</code></td><td>Re-run the checks on the last build, without rendering</td></tr>
   <tr><td><code>pixi run gantt</code></td><td>Render <code>gantt.yaml</code> to <code>figures/gantt.pdf</code></td></tr>
   <tr><td><code>pixi run refdoc</code></td><td>Regenerate the Word reference document</td></tr>
+  <tr><td><code>pixi run docx</code></td><td>Both parts to Word, without rendering the PDFs &mdash; for a supervisor who comments in Word</td></tr>
+  <tr><td><code>pixi run proof</code></td><td>Part B-1 to Word and opens it, for a Grammarly pass (macOS only)</td></tr>
   <tr><td><code>pixi run hooks</code></td><td>Install a pre-commit hook that blocks committing a failing PDF</td></tr>
   <tr><td><code>pixi run clean</code></td><td>Delete build artefacts</td></tr>
 </table>

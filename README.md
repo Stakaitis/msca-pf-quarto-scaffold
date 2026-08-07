@@ -96,6 +96,23 @@ authority on length. Any failure exits non-zero:
 Plus three warnings, which do not fail the build: cover page / table of contents,
 reference-list page span, and PDF version.
 
+## What the build produces
+
+Everything lands in `_build/`, which is generated and gitignored — `pixi run clean`
+deletes it whole, so never keep anything there (a supervisor's commented Word file
+included).
+
+| Output | Page limit | Checked with |
+|---|---|---|
+| `_build/partB1.pdf` | **10 pages, hard** | `--part-b1` |
+| `_build/partB2.pdf` | none | `--no-page-limit` |
+| `_build/partB1.docx`, `_build/partB2.docx` | none | `--no-page-limit` |
+| any other `_build/*.pdf` | none | picked up automatically, so a new document cannot go unchecked |
+
+**The full pipeline — inputs, stages, outputs — is drawn in
+[`scripts/README.md`](scripts/README.md).** Read that before changing anything in
+`scripts/`.
+
 ## Word output
 
 `pixi run build` renders `.docx` alongside the PDF, styled to match: A4, 16 mm margins,
@@ -116,6 +133,7 @@ the PDF remains the authority for the 10-page limit.
 | `pixi run pdf` | Part B-1 alone + its checks — a faster loop while writing |
 | `pixi run b2` | Part B-2 alone + its checks |
 | `pixi run check` | Re-run the checks on the last build, without rendering |
+| `pixi run test` | Prove the gate still catches what it should — synthesised PDFs, ~1 s, no LaTeX |
 | `pixi run gantt` | Render `gantt.yaml` to `figures/gantt.pdf` at text-column width |
 | `pixi run refdoc` | Regenerate the Word reference document |
 | `pixi run hooks` | Install a pre-commit hook that blocks committing a failing PDF |

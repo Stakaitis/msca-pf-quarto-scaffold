@@ -8,6 +8,7 @@
 #    make b2        build Part B-2 only, and validate it
 #    make preview   live preview while writing
 #    make check     re-validate the last build without re-rendering
+#    make test      prove the gate still catches what it should
 #    make hooks     install the pre-commit compliance hook
 #    make clean     remove build artefacts
 #
@@ -23,7 +24,7 @@ PYTHON ?= python
 BUILD  := _build
 CHECK  := $(PYTHON) scripts/check/compliance.py
 
-.PHONY: setup build pdf b2 all preview check hooks clean
+.PHONY: setup build pdf b2 all preview check test hooks clean
 
 setup:
 	$(QUARTO) install tinytex --no-prompt --update-path
@@ -47,6 +48,10 @@ preview:
 
 check:
 	PYTHON="$(PYTHON)" sh scripts/check/run.sh
+
+test:
+	$(PYTHON) scripts/check/tests/test_checks.py
+	$(CHECK) --self-check
 
 hooks:
 	sh scripts/hooks/install.sh

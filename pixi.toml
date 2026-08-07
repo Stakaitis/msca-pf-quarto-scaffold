@@ -67,6 +67,11 @@ gantt = "python scripts/gantt/make.py"
 refdoc = "python scripts/word/make_reference.py"
 
 
+# Prove the gate still catches what it exists to catch. Synthesised PDFs, no
+# LaTeX, no network, about a second. Run it after touching anything in
+# scripts/check/ -- a broken check does not raise, it silently returns PASS.
+test = { cmd = "python scripts/check/tests/test_checks.py && python scripts/check/compliance.py --self-check" }
+
 # Re-run the compliance check on the last build, without re-rendering.
 check = "sh scripts/check/run.sh"
 
